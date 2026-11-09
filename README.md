@@ -63,8 +63,8 @@ No JavaScript framework, package installation, or build step is required.
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/princedeaustria/volunteer-desk.git
-   cd volunteer-desk
+   git clone https://github.com/princedeaustria/volunteerdesk.git
+   cd volunteerdesk
    ```
 
 2. Open the HTML file in your browser.
@@ -72,7 +72,7 @@ No JavaScript framework, package installation, or build step is required.
    If using the original generated file, open:
 
    ```text
-   volunteer-desk.html
+   volunteerdesk.html
    ```
 
 3. Begin searching, filtering, or updating volunteer records.
