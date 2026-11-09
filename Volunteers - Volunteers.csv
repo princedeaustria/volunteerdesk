@@ -1,0 +1,18 @@
+ID,Name,Assignment,Expected Time In,Actual Time In,Expected Time Out,Actual Time Out,Status,Access Card Number,Access Card Returned,Locker Number,Locker Cleared,T-Shirt Size,T-Shirt Received,Gift Received,Notes
+1,Alex M.,Steven's Lab,8:00,7:55,12:00,—,Checked In,AC-001,No,L-01,No,M,Yes,No,Arrived early; orientation completed
+2,Jamie C.,CKM,8:00,8:03,12:00,—,Checked In,AC-002,No,L-02,No,S,Yes,No,Assigned to station lead
+3,Taylor B.,Front of the House,8:00,7:58,12:00,—,Checked In,AC-003,No,L-03,No,L,Yes,No,Supporting guest welcome and directions
+4,Jordan P.,Registration,7:00,6:55,9:00,9:05,Checked Out,AC-004,Yes,L-04,Yes,M,Yes,Yes,Shift completed; handover finished
+5,Casey N.,Event Setup,7:00,—,9:00,—,Absent,—,—,—,—,XL,No,No,Did not attend; coordinator notified
+6,Riley T.,Eatery,8:00,—,12:00,—,Cancelled,—,—,—,—,S,No,No,Cancelled before shift; replacement requested
+7,Morgan L.,Steven's Lab,10:00,—,14:00,—,Scheduled,—,—,—,—,M,No,No,Assist with activity preparation
+8,Avery W.,CKM,10:00,—,14:00,—,Scheduled,—,—,—,—,L,No,No,Report to station lead on arrival
+9,Quinn G.,Front of the House,10:00,—,14:00,—,Scheduled,—,—,—,—,XS,No,No,Support guest arrivals and wayfinding
+10,Cameron D.,Registration,10:00,—,14:00,—,Scheduled,—,—,—,—,XL,No,No,Assist with attendee check-in
+11,Reese M.,Volunteer Support,11:00,—,15:00,—,Scheduled,—,—,—,—,M,No,No,Provide break coverage
+12,Skyler A.,Eatery,11:00,—,15:00,—,Scheduled,—,—,—,—,S,No,No,Assist with serving and restocking
+13,Parker L.,Steven's Lab,12:00,—,16:00,—,Scheduled,—,—,—,—,L,No,No,Afternoon shift; receive handover
+14,Rowan C.,CKM,12:00,—,16:00,—,Scheduled,—,—,—,—,M,No,No,Afternoon station support
+15,Emerson H.,Front of the House,12:00,—,16:00,—,Scheduled,—,—,—,—,2XL,No,No,Support guest departures and directions
+16,Finley Y.,Event Cleanup,14:00,—,18:00,—,Scheduled,—,—,—,—,L,No,No,Assist with packing and cleanup
+17,Dakota K.,Volunteer Support,14:00,—,18:00,—,Scheduled,—,—,—,—,S,No,No,Support closing tasks and equipment returns
