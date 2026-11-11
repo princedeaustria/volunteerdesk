@@ -282,7 +282,7 @@ Camera permissions must be granted in the browser. Opening the HTML file directl
 ```text
 .
 ├── index.html
-├── Volunteers-Volunteers.csv
+├── Volunteers.csv
 └── README.md
 ```
 
