@@ -1,6 +1,6 @@
 # Science Centre Volunteer Desk
 
-A responsive, browser-based **Volunteer Desk** single-page application for a science centre. It streamlines volunteer check-in, check-out, asset issuance and return, roster management, and CSV import/export.
+A responsive, browser-based **Volunteer Desk** single-page application for a science centre. It streamlines volunteer check-in, check-out, asset issuance and return, roster management, inventory visibility, and CSV import/export.
 
 The application is built with **HTML, JavaScript, and Tailwind CSS** and stores data locally in the browser using `localStorage`. No backend, database, or installation is required.
 
@@ -18,14 +18,26 @@ The home screen provides three primary actions:
 
 The check-in process is a guided, step-by-step workflow:
 
-1. Find the volunteer by scanning or entering their ID, or searching by name.
+1. Find the volunteer by scanning their QR code, entering their ID, or searching by name.
 2. Review the volunteer’s shift assignment and expected time in/out.
 3. Check in the volunteer and record the actual arrival time.
 4. Issue and track volunteer assets.
 5. Add handover or special-instruction notes.
 6. Complete check-in and return to Home.
 
-If a volunteer cannot be found, the application displays a clear “Volunteer not found” message. Volunteers who are already checked in cannot be checked in again.
+A volunteer ID or name must be provided before continuing. If a volunteer cannot be found, the application displays a clear “Volunteer not found” message. Volunteers who are already checked in cannot be checked in again.
+
+### QR code scanning
+
+Both **Check-in** and **Check-out** include QR-code scanning.
+
+- Select **Start QR scan** to activate the device camera.
+- Scan the QR code containing the volunteer ID.
+- The scanned ID is entered automatically into the Volunteer ID field.
+- The scanner stops automatically after a successful scan.
+- The application then continues to the appropriate check-in or check-out workflow.
+
+Camera access requires user permission. QR scanning works in secure contexts, such as HTTPS or `localhost`; it may not work when the HTML file is opened directly using `file://`.
 
 ### Asset management
 
@@ -96,7 +108,7 @@ When a locker is released:
 
 The check-out process includes:
 
-1. Find the volunteer by ID or name.
+1. Find the volunteer by QR code, ID, or name.
 2. Confirm that the volunteer is currently checked in.
 3. Review the shift assignment, expected time in/out, and actual time in.
 4. Return applicable assets.
@@ -120,7 +132,7 @@ A volunteer cannot be checked out unless they are currently in a **Checked In** 
 
 ## Dashboard
 
-The Dashboard provides an operational view of volunteer activity and asset status.
+The Dashboard provides an operational view of volunteer activity, asset status, and inventory availability.
 
 ### Summary cards
 
@@ -128,6 +140,18 @@ The Dashboard provides an operational view of volunteer activity and asset statu
 - Checked-in volunteers
 - Scheduled shifts
 - Completed shifts
+
+### Inventory overview
+
+The Dashboard includes a live inventory overview for physical assets.
+
+| Inventory | Displayed information |
+|---|---|
+| Lockers | Available, assigned, and total lockers |
+| Access cards | Available, assigned, and total access cards |
+| T-shirts | Total available shirts and availability by size |
+
+Inventory quantities update automatically when assets are issued during check-in and returned or released during check-out.
 
 ### Roster table
 
@@ -236,6 +260,23 @@ Notes
 
 No build step, server, or database is required.
 
+### QR scanner testing
+
+For QR-code camera scanning, serve the application locally or host it over HTTPS:
+
+```bash
+# Python example
+python -m http.server 8000
+```
+
+Then open:
+
+```text
+http://localhost:8000/index.html
+```
+
+Camera permissions must be granted in the browser. Opening the HTML file directly with `file://` may prevent camera access.
+
 ### Project structure
 
 ```text
@@ -251,7 +292,7 @@ The application saves volunteer records, asset assignments, and inventory change
 
 Data remains available after refreshing or closing the browser, provided the same browser and browser profile are used.
 
-To reset the application to its sample data, clear the site’s local storage or use the browser developer tools to remove the `scienceCentreVolunteerDesk.v6` key.
+To reset the application to its sample data, clear the site’s local storage or use the browser developer tools to remove the `scienceCentreVolunteerDesk.v8` key.
 
 ## Technology
 
@@ -259,6 +300,7 @@ To reset the application to its sample data, clear the site’s local storage or
 - CSS3
 - JavaScript
 - Tailwind CSS
+- html5-qrcode
 - Browser `localStorage`
 - CSV import/export
 
@@ -272,6 +314,7 @@ This application is designed for front-desk volunteers, volunteer coordinators, 
 - Asset returns
 - Locker and access-card control
 - Roster visibility
+- Inventory availability
 - CSV-based record keeping
 
 ## License
