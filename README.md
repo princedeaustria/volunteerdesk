@@ -31,16 +31,16 @@ If a volunteer cannot be found, the application displays a clear “Volunteer no
 
 During check-in, the following assets can be issued:
 
-| Asset | Required | Tracked |
-|---|---:|---|
-| Lanyard | Yes | `Lanyard Given`, `Lanyard Returned` |
-| Name tag | Yes | `Name Tag Given` |
-| Meal voucher | Yes | `Meal Voucher Given` |
-| T-shirt | Yes | `T-Shirt Size`, `T-Shirt Received`, `T-Shirt Returned` |
-| Access card | Optional | `Access Card Number`, `Access Card Returned` |
-| Locker | Optional | `Locker Number`, `Locker Cleared` |
+| Asset | Required | Return required | Inventory behaviour |
+|---|---:|---:|---|
+| Lanyard | Yes | Yes | Returned status is recorded at check-out |
+| Name tag | Yes | No | Distribution is recorded at check-in |
+| Meal voucher | Yes | No | Distribution is recorded at check-in |
+| T-shirt | Yes | Optional | Issuing reduces inventory; return increases inventory |
+| Access card | Optional | Yes | Assignment reserves the card; return makes it available again |
+| Locker | Optional | Yes | Assignment reserves the locker; release makes it available again |
 
-#### T-shirt inventory
+### T-shirt inventory
 
 T-shirt sizes and available quantities are maintained in the application inventory. When a T-shirt is issued, the available quantity for that size decreases. When it is returned during check-out, the quantity increases again.
 
@@ -53,20 +53,44 @@ Supported sizes:
 - XL
 - 2XL
 
-#### Access cards
+### Access cards
 
-Access cards are uniquely assigned. A card cannot be assigned to another volunteer until it has been returned and marked as available.
+Access cards are uniquely assigned and must be returned before a volunteer can complete check-out.
 
-#### Lockers
+When an access card is issued:
 
-Volunteers may optionally be assigned a locker. The application supports locker preference and availability tracking.
+- The volunteer record stores the assigned card number.
+- The card inventory status changes to **Assigned**.
+- The card is linked to the volunteer ID.
+
+When an access card is returned:
+
+- The volunteer’s `Access Card Returned` field is set to `Yes`.
+- The card inventory status changes to **Available**.
+- The card is cleared from the volunteer record.
+- The card becomes available for another volunteer.
+
+### Lockers
+
+Lockers are optionally assigned and must be released before a volunteer can complete check-out.
 
 Available lockers:
 
 - **Top lockers:** 21, 23, 25, 27, 29, 31, 33, 35, 37, 39
 - **Bottom lockers:** 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40
 
-When a locker is released during check-out, it becomes available for another volunteer.
+When a locker is assigned:
+
+- The volunteer record stores the assigned locker number.
+- The locker inventory status changes to **Assigned**.
+- The locker is linked to the volunteer ID.
+
+When a locker is released:
+
+- The volunteer’s `Locker Cleared` field is set to `Yes`.
+- The locker inventory status changes to **Available**.
+- The locker is cleared from the volunteer record.
+- The locker becomes available for another volunteer.
 
 ## Check-out workflow
 
@@ -90,8 +114,8 @@ A volunteer cannot be checked out unless they are currently in a **Checked In** 
 | Name tag | No | Not shown during check-out |
 | Meal voucher | No | Not shown during check-out |
 | T-shirt | Optional | Can be returned; inventory is updated |
-| Access card | Yes | Must be returned if it was issued |
-| Locker | Yes | Must be released if it was assigned |
+| Access card | Yes | Must be returned if it was issued; inventory is updated |
+| Locker | Yes | Must be released if it was assigned; inventory is updated |
 | Gift | Yes | Must be marked as handed to the volunteer |
 
 ## Dashboard
@@ -201,30 +225,6 @@ Gift Received
 Notes
 ```
 
-## Sample CSV
-
-Save the following as `Volunteers-Volunteers.csv`:
-
-```csv
-ID,Name,Assignment,Expected Time In,Actual Time In,Expected Time Out,Actual Time Out,Status,Lanyard Given,Lanyard Returned,Name Tag Given,Meal Voucher Given,Access Card Number,Access Card Returned,Locker Number,Locker Cleared,T-Shirt Size,T-Shirt Received,T-Shirt Returned,Gift Received,Notes
-1,Alex M.,Steven's Lab,8:00,7:55,12:00,—,Checked In,Yes,No,Yes,Yes,AC-001,No,L-01,No,M,Yes,No,No,Arrived early; orientation completed
-2,Jamie C.,CKM,8:00,8:03,12:00,—,Checked In,Yes,No,Yes,Yes,AC-002,No,L-02,No,S,Yes,No,No,Assigned to station lead
-3,Taylor B.,Front of the House,8:00,7:58,12:00,—,Checked In,Yes,No,Yes,Yes,AC-003,No,L-03,No,L,Yes,No,No,Supporting guest welcome and directions
-4,Jordan P.,Registration,7:00,6:55,9:00,9:05,Checked Out,Yes,Yes,Yes,Yes,AC-004,Yes,L-04,Yes,M,Yes,Yes,Yes,Shift completed; handover finished
-5,Casey N.,Event Setup,7:00,—,9:00,—,Absent,No,—,No,No,—,—,—,—,—,XL,No,No,No,Did not attend; coordinator notified
-6,Riley T.,Eatery,8:00,—,12:00,—,Cancelled,No,—,No,No,—,—,—,—,—,S,No,No,No,Cancelled before shift; replacement requested
-7,Morgan L.,Steven's Lab,10:00,—,14:00,—,Scheduled,No,—,No,No,—,—,—,—,—,M,No,No,No,Assist with activity preparation
-8,Avery W.,CKM,10:00,—,14:00,—,Scheduled,No,—,No,No,—,—,—,—,—,L,No,No,No,Report to station lead on arrival
-9,Quinn G.,Front of the House,10:00,—,14:00,—,Scheduled,No,—,No,No,—,—,—,—,—,XS,No,No,No,Support guest arrivals and wayfinding
-10,Cameron D.,Registration,10:00,—,14:00,—,Scheduled,No,—,No,No,—,—,—,—,—,XL,No,No,No,Assist with attendee check-in
-11,Reese M.,Volunteer Support,11:00,—,15:00,—,Scheduled,No,—,No,No,—,—,—,—,—,M,No,No,No,Provide break coverage
-12,Skyler A.,Eatery,11:00,—,15:00,—,Scheduled,No,—,No,No,—,—,—,—,—,S,No,No,No,Assist with serving and restocking
-13,Parker L.,Steven's Lab,12:00,—,16:00,—,Scheduled,No,—,No,No,—,—,—,—,—,L,No,No,No,Afternoon shift; receive handover
-14,Rowan C.,CKM,12:00,—,16:00,—,Scheduled,No,—,No,No,—,—,—,—,—,M,No,No,No,Afternoon station support
-15,Emerson H.,Front of the House,12:00,—,16:00,—,Scheduled,No,—,No,No,—,—,—,—,—,2XL,No,No,No,Support guest departures and directions
-16,Finley Y.,Event Cleanup,14:00,—,18:00,—,Scheduled,No,—,No,No,—,—,—,—,—,L,No,No,No,Assist with packing and cleanup
-17,Dakota K.,Volunteer Support,14:00,—,18:00,—,Scheduled,No,—,No,No,—,—,—,—,—,S,No,No,No,Support closing tasks and equipment returns
-```
 
 ## Getting started
 
@@ -251,7 +251,7 @@ The application saves volunteer records, asset assignments, and inventory change
 
 Data remains available after refreshing or closing the browser, provided the same browser and browser profile are used.
 
-To reset the application to its sample data, clear the site’s local storage or use the browser developer tools to remove the `scienceCentreVolunteerDesk.v5` key.
+To reset the application to its sample data, clear the site’s local storage or use the browser developer tools to remove the `scienceCentreVolunteerDesk.v6` key.
 
 ## Technology
 
@@ -276,4 +276,4 @@ This application is designed for front-desk volunteers, volunteer coordinators, 
 
 ## License
 
-This project is provided for internal science-centre volunteer operations. Add your preferred license before publishing publicly.
+This project is provided for internal science-centre volunteer operations.
