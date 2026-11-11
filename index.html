@@ -151,7 +151,7 @@
 <script>
 "use strict";
 
-const STORE_KEY = "scienceCentreVolunteerDesk.v10";
+const STORE_KEY = "scienceCentreVolunteerDesk.v12";
 
 const TSHIRT_INVENTORY = {
   XS: 10,
@@ -261,6 +261,18 @@ function shiftDate(value) {
 
 function escapeJs(value) {
   return String(value || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
+function statusColor(status) {
+  const colors = {
+    "Scheduled": "bg-indigo-50 text-indigo-700 border-indigo-200",
+    "Checked In": "bg-emerald-50 text-emerald-700 border-emerald-200",
+    "Checked Out": "bg-slate-100 text-slate-700 border-slate-200",
+    "Absent": "bg-rose-50 text-rose-700 border-rose-200",
+    "Cancelled": "bg-amber-50 text-amber-700 border-amber-200"
+  };
+
+  return colors[status] || "bg-slate-100 text-slate-700 border-slate-200";
 }
 
 function showNameSuggestions(flowType) {
@@ -1614,7 +1626,7 @@ function renderDashboard() {
           </label>
         </div>
 
-        <div class="mt-7 overflow-x-auto rounded-2xl border border-slate-200">
+        <div class="mt-7 overflow-x-auto rounded-2xl border border-slate-200 max-md:hidden">
           <table>
             <thead>
               <tr>
@@ -1632,6 +1644,8 @@ function renderDashboard() {
             <tbody id="rosterBody"></tbody>
           </table>
         </div>
+
+        <div id="rosterCards" class="mt-7 space-y-4 md:hidden"></div>
       </div>
     </section>
   `;
@@ -1672,46 +1686,50 @@ function filterDashboard() {
     return matchesSearch && matchesStatus && matchesAssignment && matchesOutstanding;
   });
 
-  document.getElementById("rosterBody").innerHTML = rows.length
+  const tableRows = rows.length
     ? rows
         .map(
-          volunteer => `
-            <tr>
-              <td class="font-bold text-slate-900">${volunteer.Name}</td>
-              <td>${shiftDate(volunteer["Expected Time In"])}</td>
-              <td>${volunteer.Assignment}</td>
+          volunteer => {
+            const index = state.volunteers.indexOf(volunteer);
 
-              <td>
-                ${volunteer["Expected Time In"]}–${volunteer["Expected Time Out"]}
-              </td>
+            return `
+              <tr>
+                <td class="font-bold text-slate-900">${volunteer.Name}</td>
+                <td>${shiftDate(volunteer["Expected Time In"])}</td>
+                <td>${volunteer.Assignment}</td>
 
-              <td>
-                ${volunteer["Actual Time In"] || "—"} → ${volunteer["Actual Time Out"] || "—"}
-              </td>
+                <td>
+                  ${volunteer["Expected Time In"]}–${volunteer["Expected Time Out"]}
+                </td>
 
-              <td>
-                <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
-                  ${volunteer.Status}
-                </span>
-              </td>
+                <td>
+                  ${volunteer["Actual Time In"] || "—"} → ${volunteer["Actual Time Out"] || "—"}
+                </td>
 
-              <td class="text-xs leading-relaxed">
-                ${volunteer["Lanyard Given"] === "Yes" ? "Lanyard " : ""}
-                ${volunteer["Name Tag Given"] === "Yes" ? "• Name tag " : ""}
-                ${volunteer["Meal Voucher Given"] === "Yes" ? "• Meal voucher " : ""}
-                ${volunteer["T-Shirt Received"] === "Yes" ? `• ${volunteer["T-Shirt Size"]} T-shirt ` : ""}
-                ${volunteer["Access Card Number"] !== "—" ? `• Card ${volunteer["Access Card Number"]} ` : ""}
-                ${volunteer["Locker Number"] !== "—" ? `• Locker ${volunteer["Locker Number"]} ` : ""}
-                ${volunteer["Gift Received"] === "Yes" ? "• Gift" : ""}
-              </td>
+                <td>
+                  <span class="px-3 py-1.5 rounded-full text-xs font-bold border ${statusColor(volunteer.Status)}">
+                    ${volunteer.Status}
+                  </span>
+                </td>
 
-              <td class="text-right">
-                <button onclick="openVolunteerDetails(${state.volunteers.indexOf(volunteer)})" class="text-sky-700 font-semibold hover:underline">
-                  Details
-                </button>
-              </td>
-            </tr>
-          `
+                <td class="text-xs leading-relaxed">
+                  ${volunteer["Lanyard Given"] === "Yes" ? "Lanyard " : ""}
+                  ${volunteer["Name Tag Given"] === "Yes" ? "• Name tag " : ""}
+                  ${volunteer["Meal Voucher Given"] === "Yes" ? "• Meal voucher " : ""}
+                  ${volunteer["T-Shirt Received"] === "Yes" ? `• ${volunteer["T-Shirt Size"]} T-shirt ` : ""}
+                  ${volunteer["Access Card Number"] !== "—" ? `• Card ${volunteer["Access Card Number"]} ` : ""}
+                  ${volunteer["Locker Number"] !== "—" ? `• Locker ${volunteer["Locker Number"]} ` : ""}
+                  ${volunteer["Gift Received"] === "Yes" ? "• Gift" : ""}
+                </td>
+
+                <td class="text-right">
+                  <button onclick="openVolunteerDetails(${index})" class="text-sky-700 font-semibold hover:underline">
+                    Details
+                  </button>
+                </td>
+              </tr>
+            `;
+          }
         )
         .join("")
     : `
@@ -1721,6 +1739,109 @@ function filterDashboard() {
         </td>
       </tr>
     `;
+
+  const tableBody = document.getElementById("rosterBody");
+
+  if (tableBody) {
+    tableBody.innerHTML = tableRows;
+  }
+
+  const cards = rows.length
+    ? rows
+        .map(
+          volunteer => {
+            const index = state.volunteers.indexOf(volunteer);
+
+            const assetChips = [
+              volunteer["Lanyard Given"] === "Yes" ? "Lanyard" : "",
+              volunteer["Name Tag Given"] === "Yes" ? "Name tag" : "",
+              volunteer["Meal Voucher Given"] === "Yes" ? "Meal voucher" : "",
+              volunteer["T-Shirt Received"] === "Yes"
+                ? `${volunteer["T-Shirt Size"]} T-shirt`
+                : "",
+              volunteer["Access Card Number"] !== "—"
+                ? `Card ${volunteer["Access Card Number"]}`
+                : "",
+              volunteer["Locker Number"] !== "—"
+                ? `Locker ${volunteer["Locker Number"]}`
+                : "",
+              volunteer["Gift Received"] === "Yes" ? "Gift" : ""
+            ].filter(Boolean);
+
+            return `
+              <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="text-base font-extrabold text-slate-900 break-words">
+                      ${volunteer.Name}
+                    </div>
+
+                    <div class="mt-1 text-sm text-slate-600">
+                      ${shiftDate(volunteer["Expected Time In"])} • ${volunteer.Assignment}
+                    </div>
+                  </div>
+
+                  <span class="px-3 py-1.5 rounded-full text-xs font-bold border ${statusColor(volunteer.Status)}">
+                    ${volunteer.Status}
+                  </span>
+                </div>
+
+                <div class="mt-4 grid gap-3 text-sm">
+                  <div class="flex justify-between gap-4">
+                    <span class="text-slate-500">Scheduled</span>
+                    <span class="font-semibold text-slate-800 text-right">
+                      ${volunteer["Expected Time In"]}–${volunteer["Expected Time Out"]}
+                    </span>
+                  </div>
+
+                  <div class="flex justify-between gap-4">
+                    <span class="text-slate-500">Attendance</span>
+                    <span class="font-semibold text-slate-800 text-right">
+                      ${volunteer["Actual Time In"] || "—"} → ${volunteer["Actual Time Out"] || "—"}
+                    </span>
+                  </div>
+                </div>
+
+                ${
+                  assetChips.length
+                    ? `
+                      <div class="mt-4 flex flex-wrap gap-2">
+                        ${assetChips
+                          .map(
+                            asset => `
+                              <span class="px-3 py-1.5 rounded-full bg-slate-100 text-xs font-semibold text-slate-700">
+                                ${asset}
+                              </span>
+                            `
+                          )
+                          .join("")}
+                      </div>
+                    `
+                    : ""
+                }
+
+                <button
+                  onclick="openVolunteerDetails(${index})"
+                  class="mt-5 w-full px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold"
+                >
+                  View details
+                </button>
+              </div>
+            `;
+          }
+        )
+        .join("")
+    : `
+      <div class="rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">
+        No volunteers match the current filters.
+      </div>
+    `;
+
+  const cardContainer = document.getElementById("rosterCards");
+
+  if (cardContainer) {
+    cardContainer.innerHTML = cards;
+  }
 }
 
 function clearFilters() {
