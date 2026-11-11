@@ -6,17 +6,16 @@
   <title>Science Centre Volunteer Desk</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
   <style>
-    :root {
-      color-scheme: light;
-    }
-
     body {
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    .hidden { display: none !important; }
+    .hidden {
+      display: none !important;
+    }
 
     .fade-in {
       animation: fadeIn .22s ease-out;
@@ -105,6 +104,11 @@
     button {
       cursor: pointer;
     }
+
+    #qrReader video {
+      width: 100% !important;
+      border-radius: 1rem;
+    }
   </style>
 </head>
 
@@ -112,31 +116,42 @@
   <header class="bg-white border-b border-slate-200 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-8 py-5 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-4">
-        <div class="h-12 w-12 rounded-2xl bg-sky-600 text-white grid place-items-center font-extrabold text-lg shadow-sm">VD</div>
+        <div class="h-12 w-12 rounded-2xl bg-sky-600 text-white grid place-items-center font-extrabold text-lg shadow-sm">
+          VD
+        </div>
 
         <div>
           <h1 class="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight">
             Science Centre Volunteer Desk
           </h1>
+
           <p class="text-xs sm:text-sm text-slate-500">
             Check-in, check-out, asset tracking, and roster management
           </p>
         </div>
       </div>
 
-      <nav id="breadcrumb" class="flex flex-wrap items-center gap-1 text-sm" aria-label="Breadcrumb"></nav>
+      <nav
+        id="breadcrumb"
+        class="flex flex-wrap items-center gap-1 text-sm"
+        aria-label="Breadcrumb"
+      ></nav>
     </div>
   </header>
 
   <main id="main" class="max-w-7xl mx-auto px-4 sm:px-8 py-8"></main>
 
-  <div id="toast" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-5 py-3.5 rounded-2xl text-white shadow-xl"></div>
+  <div
+    id="toast"
+    class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-5 py-3.5 rounded-2xl text-white shadow-xl"
+  ></div>
+
   <div id="modalRoot" class="hidden fixed inset-0 z-40"></div>
 
 <script>
 "use strict";
 
-const STORE_KEY = "scienceCentreVolunteerDesk.v6";
+const STORE_KEY = "scienceCentreVolunteerDesk.v8";
 
 const TSHIRT_INVENTORY = {
   XS: 10,
@@ -178,6 +193,8 @@ const sampleCSV = [
 
 let state = null;
 let flow = null;
+let qrScanner = null;
+let qrScannerActive = false;
 
 function parseCSV(text) {
   const rows = text
@@ -294,6 +311,7 @@ function setBreadcrumb(steps) {
 }
 
 function goHome() {
+  stopQrScanner();
   flow = null;
   renderHome();
 }
@@ -313,6 +331,8 @@ function goToFlowStep(step) {
 }
 
 function startFlow(type) {
+  stopQrScanner();
+
   flow = {
     type,
     step: 1,
@@ -324,6 +344,8 @@ function startFlow(type) {
 
 function findVolunteer(query) {
   const value = String(query || "").trim().toLowerCase();
+
+  if (!value) return null;
 
   return state.volunteers.find(volunteer => {
     return (
@@ -367,17 +389,23 @@ function renderHome() {
         <div class="mt-10 grid gap-5 sm:grid-cols-3">
           <button onclick="startFlow('checkin')" class="bg-white text-sky-800 hover:bg-sky-50 rounded-3xl p-7 text-left shadow-lg transition">
             <div class="text-xl font-extrabold">Check-in</div>
-            <p class="mt-2 text-sm text-slate-600">Register arrival and issue volunteer assets.</p>
+            <p class="mt-2 text-sm text-slate-600">
+              Scan a QR code or search for a volunteer to register arrival.
+            </p>
           </button>
 
           <button onclick="startFlow('checkout')" class="bg-white text-indigo-800 hover:bg-indigo-50 rounded-3xl p-7 text-left shadow-lg transition">
             <div class="text-xl font-extrabold">Check-out</div>
-            <p class="mt-2 text-sm text-slate-600">Return assets, issue gifts, and complete shifts.</p>
+            <p class="mt-2 text-sm text-slate-600">
+              Scan a QR code or search for a volunteer to complete a shift.
+            </p>
           </button>
 
           <button onclick="startFlow('dashboard')" class="bg-white/10 text-white hover:bg-white/20 border border-white/30 rounded-3xl p-7 text-left shadow-lg transition">
             <div class="text-xl font-extrabold">Dashboard</div>
-            <p class="mt-2 text-sm text-sky-100">Review roster, attendance, assets, and inventory.</p>
+            <p class="mt-2 text-sm text-sky-100">
+              Review roster, attendance, assets, and inventory.
+            </p>
           </button>
         </div>
       </div>
@@ -396,21 +424,53 @@ function renderCheckIn() {
 
   if (flow.step === 1) {
     document.getElementById("main").innerHTML = `
-      <section class="fade-in max-w-3xl mx-auto">
+      <section class="fade-in max-w-4xl mx-auto">
         <div class="card p-7 sm:p-9">
           <h2 class="text-2xl font-extrabold text-slate-900">Find volunteer</h2>
-          <p class="mt-2 text-slate-500">Scan the volunteer QR/ID or search by name to begin check-in.</p>
 
-          <div class="mt-8 grid gap-6 sm:grid-cols-2">
+          <p class="mt-2 text-slate-500">
+            Scan the volunteer QR code or enter a volunteer ID or name. A volunteer ID or name is required to continue.
+          </p>
+
+          <div class="mt-8 grid gap-8 lg:grid-cols-2">
             <div>
-              <label class="field-label" for="scanId">Scan or enter ID</label>
-              <input id="scanId" class="field" placeholder="Enter volunteer ID" />
+              <div class="field-label">QR code scan</div>
+
+              <div
+                id="qrReader"
+                class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 min-h-[260px]"
+              ></div>
+
+              <div id="qrStatus" class="mt-3 text-sm text-slate-500">
+                Camera scanning requires permission and works best over HTTPS or localhost.
+              </div>
+
+              <div class="mt-4 flex flex-wrap gap-3">
+                <button onclick="startQrScanner('checkin')" class="px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold">
+                  Start QR scan
+                </button>
+
+                <button onclick="stopQrScanner()" class="px-5 py-3 rounded-xl border border-slate-300 font-semibold hover:bg-slate-50">
+                  Stop scanner
+                </button>
+              </div>
             </div>
 
             <div>
-              <label class="field-label" for="searchName">Or search name</label>
-              <input id="searchName" list="volunteers" class="field" placeholder="Start typing a name" />
-              <datalist id="volunteers">${volunteerOptions()}</datalist>
+              <div class="field-label">Manual lookup</div>
+
+              <div class="space-y-5">
+                <div>
+                  <label for="scanId">Volunteer ID</label>
+                  <input id="scanId" class="field mt-2" placeholder="Enter volunteer ID" />
+                </div>
+
+                <div>
+                  <label for="searchName">Volunteer name</label>
+                  <input id="searchName" list="volunteers" class="field mt-2" placeholder="Start typing a name" />
+                  <datalist id="volunteers">${volunteerOptions()}</datalist>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -419,7 +479,7 @@ function renderCheckIn() {
               Back to Home
             </button>
 
-            <button onclick="locateCheckInVolunteer()" class="px-7 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold shadow-sm">
+            <button onclick="locateCheckInVolunteer()" class="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm">
               Continue
             </button>
           </div>
@@ -624,9 +684,88 @@ function updateLockerOptions() {
     .join("");
 }
 
+function startQrScanner(flowType) {
+  const readerElement = document.getElementById("qrReader");
+  const statusElement = document.getElementById("qrStatus");
+
+  if (!readerElement) return;
+
+  if (typeof Html5Qrcode === "undefined") {
+    statusElement.textContent = "QR scanner library is unavailable. Please use manual ID or name search.";
+    showToast("QR scanner library is unavailable.", "error");
+    return;
+  }
+
+  if (qrScannerActive) {
+    showToast("QR scanner is already running.", "info");
+    return;
+  }
+
+  qrScanner = new Html5Qrcode("qrReader");
+
+  qrScanner
+    .start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 }
+      },
+      decodedText => {
+        document.getElementById("scanId").value = decodedText;
+        document.getElementById("searchName").value = "";
+
+        statusElement.textContent = `QR code scanned: ${decodedText}`;
+        showToast("QR code scanned successfully.");
+
+        stopQrScanner();
+
+        if (flowType === "checkin") {
+          locateCheckInVolunteer();
+        } else {
+          locateCheckOutVolunteer();
+        }
+      },
+      () => {
+        // Repeated frame-processing errors are intentionally ignored.
+      }
+    )
+    .then(() => {
+      qrScannerActive = true;
+      statusElement.textContent = "Scanner is active. Point the camera at the volunteer QR code.";
+    })
+    .catch(error => {
+      console.error(error);
+      qrScannerActive = false;
+      statusElement.textContent = "Unable to start the camera. Check camera permissions or use manual lookup.";
+      showToast("Unable to start QR scanner.", "error");
+    });
+}
+
+function stopQrScanner() {
+  if (!qrScanner || !qrScannerActive) return;
+
+  qrScanner
+    .stop()
+    .then(() => {
+      qrScanner.clear();
+    })
+    .catch(error => {
+      console.warn("Unable to stop QR scanner cleanly.", error);
+    })
+    .finally(() => {
+      qrScannerActive = false;
+      qrScanner = null;
+    });
+}
+
 function locateCheckInVolunteer() {
-  const id = document.getElementById("scanId").value;
-  const name = document.getElementById("searchName").value;
+  const id = document.getElementById("scanId").value.trim();
+  const name = document.getElementById("searchName").value.trim();
+
+  if (!id && !name) {
+    showToast("Enter a volunteer ID or name before continuing.", "error");
+    return;
+  }
 
   const volunteer = id ? findVolunteer(id) : findVolunteer(name);
 
@@ -640,12 +779,20 @@ function locateCheckInVolunteer() {
     return;
   }
 
+  stopQrScanner();
+
   flow.volunteer = volunteer;
   flow.step = 2;
   render();
 }
 
 function confirmCheckIn() {
+  if (!flow.volunteer) {
+    showToast("No volunteer selected. Return to Find Volunteer.", "error");
+    goHome();
+    return;
+  }
+
   flow.volunteer["Actual Time In"] = nowTime();
   flow.volunteer.Status = "Checked In";
   flow.step = 3;
@@ -653,6 +800,12 @@ function confirmCheckIn() {
 }
 
 function completeCheckIn() {
+  if (!flow.volunteer) {
+    showToast("No volunteer selected for check-in.", "error");
+    goHome();
+    return;
+  }
+
   const volunteer = flow.volunteer;
 
   const lanyard = document.getElementById("lanyard").checked;
@@ -731,21 +884,53 @@ function renderCheckOut() {
 
   if (flow.step === 1) {
     document.getElementById("main").innerHTML = `
-      <section class="fade-in max-w-3xl mx-auto">
+      <section class="fade-in max-w-4xl mx-auto">
         <div class="card p-7 sm:p-9">
           <h2 class="text-2xl font-extrabold text-slate-900">Find volunteer for check-out</h2>
-          <p class="mt-2 text-slate-500">Search by volunteer ID or name. Only checked-in volunteers can be checked out.</p>
 
-          <div class="mt-8 grid gap-6 sm:grid-cols-2">
+          <p class="mt-2 text-slate-500">
+            Scan the volunteer QR code or enter a volunteer ID or name. A volunteer ID or name is required to continue.
+          </p>
+
+          <div class="mt-8 grid gap-8 lg:grid-cols-2">
             <div>
-              <label class="field-label" for="scanId">Scan or enter ID</label>
-              <input id="scanId" class="field" placeholder="Enter volunteer ID" />
+              <div class="field-label">QR code scan</div>
+
+              <div
+                id="qrReader"
+                class="rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 min-h-[260px]"
+              ></div>
+
+              <div id="qrStatus" class="mt-3 text-sm text-slate-500">
+                Camera scanning requires permission and works best over HTTPS or localhost.
+              </div>
+
+              <div class="mt-4 flex flex-wrap gap-3">
+                <button onclick="startQrScanner('checkout')" class="px-5 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold">
+                  Start QR scan
+                </button>
+
+                <button onclick="stopQrScanner()" class="px-5 py-3 rounded-xl border border-slate-300 font-semibold hover:bg-slate-50">
+                  Stop scanner
+                </button>
+              </div>
             </div>
 
             <div>
-              <label class="field-label" for="searchName">Or search name</label>
-              <input id="searchName" list="volunteers" class="field" placeholder="Start typing a name" />
-              <datalist id="volunteers">${volunteerOptions()}</datalist>
+              <div class="field-label">Manual lookup</div>
+
+              <div class="space-y-5">
+                <div>
+                  <label for="scanId">Volunteer ID</label>
+                  <input id="scanId" class="field mt-2" placeholder="Enter volunteer ID" />
+                </div>
+
+                <div>
+                  <label for="searchName">Volunteer name</label>
+                  <input id="searchName" list="volunteers" class="field mt-2" placeholder="Start typing a name" />
+                  <datalist id="volunteers">${volunteerOptions()}</datalist>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -754,7 +939,7 @@ function renderCheckOut() {
               Back to Home
             </button>
 
-            <button onclick="locateCheckOutVolunteer()" class="px-7 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold shadow-sm">
+            <button onclick="locateCheckOutVolunteer()" class="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm">
               Continue
             </button>
           </div>
@@ -880,13 +1065,18 @@ function renderCheckOut() {
 }
 
 function locateCheckOutVolunteer() {
-  const id = document.getElementById("scanId").value;
-  const name = document.getElementById("searchName").value;
+  const id = document.getElementById("scanId").value.trim();
+  const name = document.getElementById("searchName").value.trim();
+
+  if (!id && !name) {
+    showToast("Enter a volunteer ID or name before continuing.", "error");
+    return;
+  }
 
   const volunteer = id ? findVolunteer(id) : findVolunteer(name);
 
   if (!volunteer) {
-    showToast("Volunteer not found.", "error");
+    showToast("Volunteer not found. Check the ID or name.", "error");
     return;
   }
 
@@ -898,12 +1088,20 @@ function locateCheckOutVolunteer() {
     return;
   }
 
+  stopQrScanner();
+
   flow.volunteer = volunteer;
   flow.step = 2;
   render();
 }
 
 function completeCheckOut() {
+  if (!flow.volunteer) {
+    showToast("No volunteer selected for check-out.", "error");
+    goHome();
+    return;
+  }
+
   const volunteer = flow.volunteer;
 
   const lanyardReturn = document.getElementById("lanyardReturn")
@@ -995,6 +1193,7 @@ function renderDashboard() {
   setBreadcrumb(["Home", "Dashboard"]);
 
   const volunteers = state.volunteers;
+  const inventory = state.inventory;
 
   const checkedIn = volunteers.filter(
     volunteer => volunteer.Status === "Checked In"
@@ -1007,6 +1206,31 @@ function renderDashboard() {
   const completed = volunteers.filter(
     volunteer => volunteer.Status === "Checked Out"
   ).length;
+
+  const availableLockers = inventory.lockers.filter(
+    locker => locker.status === "Available"
+  ).length;
+
+  const assignedLockers = inventory.lockers.filter(
+    locker => locker.status === "Assigned"
+  ).length;
+
+  const totalLockers = inventory.lockers.length;
+
+  const availableAccessCards = inventory.accessCards.filter(
+    card => card.status === "Available"
+  ).length;
+
+  const assignedAccessCards = inventory.accessCards.filter(
+    card => card.status === "Assigned"
+  ).length;
+
+  const totalAccessCards = inventory.accessCards.length;
+
+  const availableTshirts = Object.values(inventory.tshirts).reduce(
+    (total, quantity) => total + quantity,
+    0
+  );
 
   const assignments = [];
   volunteers.forEach(volunteer => {
@@ -1022,6 +1246,77 @@ function renderDashboard() {
         ${summaryCard("Checked-in volunteers", checkedIn, "text-emerald-600")}
         ${summaryCard("Scheduled shifts", scheduled, "text-indigo-600")}
         ${summaryCard("Completed shifts", completed, "text-slate-700")}
+      </div>
+
+      <div class="card mt-7 p-6 sm:p-8">
+        <h2 class="text-xl font-extrabold text-slate-900">Inventory overview</h2>
+        <p class="mt-1 text-sm text-slate-500">
+          Live availability for lockers, access cards, and volunteer T-shirts.
+        </p>
+
+        <div class="mt-6 grid gap-5 lg:grid-cols-3">
+          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <div class="field-label">Lockers</div>
+
+            <div class="mt-3 text-3xl font-extrabold text-sky-700">
+              ${availableLockers}
+              <span class="text-base font-semibold text-slate-500">available</span>
+            </div>
+
+            <div class="mt-3 text-sm text-slate-600">
+              ${assignedLockers} assigned • ${totalLockers} total
+            </div>
+
+            <div class="mt-4 h-2 rounded-full bg-slate-200 overflow-hidden">
+              <div
+                class="h-full bg-sky-600"
+                style="width: ${totalLockers ? Math.round((availableLockers / totalLockers) * 100) : 0}%;"
+              ></div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <div class="field-label">Access cards</div>
+
+            <div class="mt-3 text-3xl font-extrabold text-indigo-700">
+              ${availableAccessCards}
+              <span class="text-base font-semibold text-slate-500">available</span>
+            </div>
+
+            <div class="mt-3 text-sm text-slate-600">
+              ${assignedAccessCards} assigned • ${totalAccessCards} total
+            </div>
+
+            <div class="mt-4 h-2 rounded-full bg-slate-200 overflow-hidden">
+              <div
+                class="h-full bg-indigo-600"
+                style="width: ${totalAccessCards ? Math.round((availableAccessCards / totalAccessCards) * 100) : 0}%;"
+              ></div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+            <div class="field-label">T-shirts</div>
+
+            <div class="mt-3 text-3xl font-extrabold text-emerald-700">
+              ${availableTshirts}
+              <span class="text-base font-semibold text-slate-500">available</span>
+            </div>
+
+            <div class="mt-4 space-y-2">
+              ${Object.keys(inventory.tshirts)
+                .map(
+                  size => `
+                    <div class="flex items-center justify-between text-sm">
+                      <span class="font-semibold text-slate-700">${size}</span>
+                      <span class="text-slate-500">${inventory.tshirts[size]} available</span>
+                    </div>
+                  `
+                )
+                .join("")}
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="card mt-7 p-6 sm:p-8">
