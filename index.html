@@ -1,514 +1,1153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Volunteer Desk | Check-in & Shift Management</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-  body{font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:#f5f7fb}
-  button,input,select,textarea{font:inherit}
-  button:focus-visible,a:focus-visible{outline:3px solid #818cf8;outline-offset:3px}
-  dialog{border:0;border-radius:20px;padding:0;width:min(860px,96vw);max-height:92vh}
-  dialog::backdrop{background:rgba(15,23,42,.55);backdrop-filter:blur(3px)}
-  .field{width:100%;border:1px solid #cbd5e1;border-radius:9px;padding:9px 11px;background:white}
-  .field:focus{outline:2px solid #6366f1;outline-offset:1px}
-  th{white-space:nowrap}td{vertical-align:middle}
-  .badge{display:inline-flex;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;white-space:nowrap}
-  .Scheduled{background:#e0e7ff;color:#3730a3}
-  .CheckedIn{background:#dcfce7;color:#166534}
-  .CheckedOut{background:#f1f5f9;color:#475569}
-  .Absent{background:#fee2e2;color:#991b1b}
-  .Cancelled{background:#fef3c7;color:#92400e}
-  .step{display:none}.step.active{display:block}
-  .scan-box{width:100%;aspect-ratio:4/3;background:#0f172a;border-radius:12px;overflow:hidden}
-  video{width:100%;height:100%;object-fit:cover}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Science Centre Volunteer Desk</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body { font-family: system-ui, sans-serif; }
+    .hidden { display: none !important; }
+    .fade-in { animation: fadeIn .2s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    input, select, textarea { border: 1px solid #cbd5e1; border-radius: .75rem; padding: .55rem .75rem; width: 100%; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { padding: .75rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    button { cursor: pointer; }
+  </style>
 </head>
-<body class="text-slate-800">
 
-<header class="bg-white border-b border-slate-200">
-  <div class="max-w-7xl mx-auto px-5 sm:px-8 py-5 flex items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <div class="bg-indigo-600 text-white w-10 h-10 rounded-xl grid place-items-center font-bold">V</div>
-      <div>
-        <div class="font-bold tracking-tight text-lg">Volunteer Desk</div>
-        <div class="text-xs text-slate-500">People first. Every shift.</div>
-      </div>
-    </div>
-    <button id="homeBtn" class="text-xs font-semibold text-indigo-700 border border-indigo-200 rounded-full px-3 py-2 hover:bg-indigo-50">Home</button>
-      <span class="text-xs text-slate-500 border rounded-full px-3 py-2">Local workspace</span>
-  </div>
-</header>
+<body class="bg-slate-100 text-slate-800">
+  <header class="bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-sky-600 text-white grid place-items-center font-bold">VD</div>
 
-<section id="home" class="max-w-7xl mx-auto px-5 sm:px-8 py-10">
-  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-10">
-    <p class="text-indigo-600 font-semibold text-xs uppercase tracking-widest mb-2">Volunteer Desk</p>
-    <h1 class="text-3xl font-bold tracking-tight">What would you like to do?</h1>
-    <p class="text-slate-500 mt-2">Choose an option to check a volunteer in or out, review shift activity, or open the volunteer list.</p>
-
-    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-      <button type="button" data-home-action="checkin" class="home-card text-left bg-indigo-50 border border-indigo-100 hover:border-indigo-300 rounded-2xl p-5">
-        <div class="text-2xl mb-3">&#9989;</div>
-        <div class="font-bold text-lg">Check-in</div>
-        <div class="text-sm text-slate-500 mt-1">Find a volunteer and start their shift.</div>
-      </button>
-
-      <button type="button" data-home-action="checkout" class="home-card text-left bg-slate-50 border border-slate-200 hover:border-slate-400 rounded-2xl p-5">
-        <div class="text-2xl mb-3">&#128274;</div>
-        <div class="font-bold text-lg">Check-out</div>
-        <div class="text-sm text-slate-500 mt-1">End a volunteer&rsquo;s shift and return equipment.</div>
-      </button>
-
-      <button type="button" data-home-action="dashboard" class="home-card text-left bg-white border border-slate-200 hover:border-indigo-300 rounded-2xl p-5">
-        <div class="text-2xl mb-3">&#128202;</div>
-        <div class="font-bold text-lg">Dashboard</div>
-        <div class="text-sm text-slate-500 mt-1">Review volunteer and shift activity.</div>
-      </button>
-
-      <button type="button" data-home-action="list" class="home-card text-left bg-white border border-slate-200 hover:border-indigo-300 rounded-2xl p-5">
-        <div class="text-2xl mb-3">&#128203;</div>
-        <div class="font-bold text-lg">Volunteer list</div>
-        <div class="text-sm text-slate-500 mt-1">Search, filter, and manage volunteers.</div>
-      </button>
-    </div>
-  </div>
-</section>
-
-<main id="app" class="max-w-7xl mx-auto px-5 sm:px-8 py-8 hidden">
-  <div class="flex flex-wrap justify-between items-end gap-4 mb-7">
-    <div>
-      <p class="text-indigo-600 font-semibold text-xs uppercase tracking-widest mb-2">Volunteer operations</p>
-      <h1 class="text-3xl font-bold tracking-tight">A smoother start to every shift.</h1>
-      <p class="text-slate-500 mt-2">Check volunteers in and out with a consistent, step-by-step process.</p>
-    </div>
-    <div class="flex flex-wrap gap-3">
-      <button id="startCheckIn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-semibold text-sm">Start check-in</button>
-      <button id="startCheckOut" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-xl font-semibold text-sm">Start check-out</button>
-      <button id="export" class="bg-white border border-slate-300 hover:bg-slate-50 px-5 py-3 rounded-xl font-semibold text-sm">Export filtered CSV</button>
-    </div>
-  </div>
-
-  <section aria-label="Volunteer overview" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-7" id="stats"></section>
-
-  <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-    <div class="p-5 sm:p-6 border-b border-slate-100">
-      <div class="flex flex-wrap justify-between gap-2 items-center mb-5">
-        <h2 class="text-lg font-bold">Volunteer roster <span id="count" class="ml-2 text-xs font-medium bg-slate-100 text-slate-500 rounded-full px-2 py-1"></span></h2>
-        <button id="clear" class="text-sm text-indigo-600 hover:underline">Clear filters</button>
-      </div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <label class="lg:col-span-2">
-          <span class="block text-xs font-semibold text-slate-500 mb-2">Search volunteers</span>
-          <input id="search" class="field" type="search" placeholder="Unique ID, name, assignment, card, locker, or notes…">
-        </label>
-        <label>
-          <span class="block text-xs font-semibold text-slate-500 mb-2">Status</span>
-          <select id="status" class="field"><option value="">All statuses</option></select>
-        </label>
-        <label>
-          <span class="block text-xs font-semibold text-slate-500 mb-2">Assignment</span>
-          <select id="assignment" class="field"><option value="">All assignments</option></select>
-        </label>
-      </div>
-      <div class="flex flex-wrap justify-between gap-3 items-center mt-4 text-xs text-slate-500">
-        <label class="flex items-center gap-2">
-          <input id="equipment" type="checkbox" class="accent-indigo-600">
-          Equipment outstanding (card or locker)
-        </label>
-        <span>Times shown in 24-hour format · Select a name for full details</span>
-      </div>
-    </div>
-
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm text-left">
-        <thead class="bg-slate-50 text-xs text-slate-500 uppercase tracking-wide">
-          <tr>
-            <th class="px-6 py-4"><button id="sort" title="Toggle name order">Volunteer ↕</button></th>
-            <th class="px-4 py-4">Unique ID</th>
-            <th class="px-4 py-4">Assignment</th>
-            <th class="px-4 py-4">Scheduled shift</th>
-            <th class="px-4 py-4">Actual in / out</th>
-            <th class="px-4 py-4">Status</th>
-            <th class="px-4 py-4">Equipment</th>
-            <th class="px-6 py-4 text-right">Action</th>
-          </tr>
-        </thead>
-        <tbody id="roster" class="divide-y divide-slate-100"></tbody>
-      </table>
-    </div>
-
-    <div id="empty" class="p-12 text-center" hidden>
-      <h3 class="font-semibold">No volunteers match your filters</h3>
-      <p class="text-sm text-slate-500 mt-2">Try a different search or clear your filters.</p>
-    </div>
-
-    <div class="px-6 py-4 border-t text-xs text-slate-500 flex flex-wrap gap-2 justify-between">
-      <span id="summary" aria-live="polite"></span>
-      <span>Changes save in this browser only</span>
-    </div>
-  </section>
-
-  <footer class="mt-5 text-xs text-slate-500 flex justify-between gap-4">
-    <span>Demo workspace · No server connection or multi-user sync</span>
-    <button id="reset" class="hover:text-red-600 underline">Reset sample data</button>
-  </footer>
-</main>
-
-<!-- Check-in / Check-out wizard -->
-<dialog id="flow" aria-labelledby="flowTitle">
-  <form id="flowForm" class="flex flex-col max-h-[92vh]">
-    <div class="px-6 py-5 border-b flex justify-between items-center">
-      <div>
-        <p id="flowKind" class="text-xs text-indigo-600 font-semibold uppercase tracking-wide">Check-in</p>
-        <h2 id="flowTitle" class="text-xl font-bold mt-1">Find volunteer</h2>
-      </div>
-      <button type="button" id="flowClose" aria-label="Close" class="text-slate-500 text-2xl px-2">×</button>
-    </div>
-
-    <div class="p-6 overflow-y-auto flex-1">
-      <!-- Step 1: identify -->
-      <section class="step active" data-step="1">
-        <p class="text-sm text-slate-600 mb-4">Scan the volunteer’s QR code or search by unique ID or name.</p>
-        <div class="grid md:grid-cols-2 gap-4">
-          <div class="border rounded-xl p-4">
-            <p class="font-semibold text-sm mb-2">Scan QR code</p>
-            <div id="scanBox" class="scan-box mb-3 hidden"><video id="scanVideo" autoplay muted playsinline></video></div>
-            <button type="button" id="scanBtn" class="w-full bg-indigo-600 text-white rounded-lg py-2 text-sm font-semibold">Start camera scan</button>
-            <p id="scanMsg" class="text-xs text-slate-500 mt-2">Camera scanning uses this device’s supported QR reader.</p>
-          </div>
-          <div class="border rounded-xl p-4">
-            <p class="font-semibold text-sm mb-2">Search or type</p>
-            <input id="findInput" class="field mb-3" placeholder="Unique ID or volunteer name" autocomplete="off">
-            <div id="findResults" class="space-y-2 max-h-64 overflow-y-auto"></div>
-          </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold text-slate-900">Science Centre Volunteer Desk</h1>
+          <p class="text-xs sm:text-sm text-slate-500">Check-in, check-out, assets, and roster management</p>
         </div>
-        <div id="notFound" class="hidden mt-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-4 text-sm">
-          No matching volunteer was found. Check the unique ID or name, then try again.
-        </div>
-      </section>
-
-      <!-- Step 2: confirm -->
-      <section class="step" data-step="2">
-        <div id="confirmCard" class="bg-slate-50 border rounded-xl p-4 mb-5"></div>
-        <div id="confirmActions" class="flex flex-wrap gap-3"></div>
-      </section>
-
-      <!-- Step 3: check-in items -->
-      <section class="step" data-step="3">
-        <div id="checkInSteps" class="space-y-5"></div>
-      </section>
-
-      <!-- Step 4: check-out items -->
-      <section class="step" data-step="4">
-        <div id="checkOutSteps" class="space-y-5"></div>
-      </section>
-
-      <!-- Step 5: done -->
-      <section class="step" data-step="5">
-        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl p-5">
-          <h3 class="font-bold text-lg">Completed</h3>
-          <p id="doneMessage" class="text-sm mt-1"></p>
-        </div>
-      </section>
-    </div>
-
-    <div class="px-6 py-4 bg-slate-50 border-t flex justify-between items-center gap-3">
-      <button type="button" id="flowBack" class="px-4 py-2 text-sm rounded-lg border border-slate-300 bg-white">Back</button>
-      <div class="flex gap-3">
-        <button type="button" id="flowCancel" class="px-4 py-2 text-sm">Cancel</button>
-        <button type="button" id="flowNext" class="bg-indigo-600 text-white rounded-lg px-5 py-2 text-sm font-semibold">Continue</button>
       </div>
-    </div>
-  </form>
-</dialog>
 
-<!-- Details -->
-<dialog id="detail" aria-labelledby="dialogTitle">
-  <form id="edit">
-    <div class="px-6 py-5 border-b flex justify-between items-center">
-      <div>
-        <p class="text-xs text-indigo-600 font-semibold uppercase tracking-wide">Volunteer details</p>
-        <h2 id="dialogTitle" class="text-xl font-bold mt-1"></h2>
-      </div>
-      <button type="button" id="close" aria-label="Close details" class="text-slate-500 text-2xl px-2">×</button>
+      <nav id="breadcrumb" class="flex flex-wrap items-center gap-1 text-sm"></nav>
     </div>
-    <div id="fields" class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto"></div>
-    <div class="px-6 py-4 bg-slate-50 border-t flex justify-end gap-3">
-      <button type="button" id="cancel" class="px-4 py-2 text-sm">Cancel</button>
-      <button class="bg-indigo-600 text-white rounded-lg px-5 py-2 text-sm font-semibold">Save changes</button>
-    </div>
-  </form>
-</dialog>
+  </header>
 
-<div id="toast" role="status" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-lg text-sm hidden"></div>
+  <main id="main" class="max-w-7xl mx-auto px-4 sm:px-6 py-6"></main>
+
+  <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-xl text-white shadow-lg"></div>
+  <div id="modalRoot" class="hidden fixed inset-0 z-40"></div>
 
 <script>
-const seed=[
-{"ID":"VD-001","Name":"Alex M.","Assignment":"Steven's Lab","Expected Time In":"08:00","Actual Time In":"07:55","Expected Time Out":"12:00","Actual Time Out":"—","Status":"Checked In","Access Card Number":"AC-001","Access Card Returned":"No","Lanyard Given":"Yes","Lanyard Returned":"—","Meal Voucher Given":"Yes","Locker Needed":"Yes","Locker Preference":"Top","Locker Number":"L-21","Locker Cleared":"No","T-Shirt Size":"M","T-Shirt Received":"Yes","T-Shirt Returned":"—","Notes":"Arrived early; orientation completed"},
-{"ID":"VD-002","Name":"Jamie C.","Assignment":"CKM","Expected Time In":"08:00","Actual Time In":"08:03","Expected Time Out":"12:00","Actual Time Out":"—","Status":"Checked In","Access Card Number":"AC-002","Access Card Returned":"No","Lanyard Given":"Yes","Lanyard Returned":"—","Meal Voucher Given":"Yes","Locker Needed":"Yes","Locker Preference":"Bottom","Locker Number":"L-02","Locker Cleared":"No","T-Shirt Size":"S","T-Shirt Received":"Yes","T-Shirt Returned":"—","Notes":"Assigned to station lead"},
-{"ID":"VD-003","Name":"Taylor B.","Assignment":"Front of the House","Expected Time In":"08:00","Actual Time In":"07:58","Expected Time Out":"12:00","Actual Time Out":"—","Status":"Checked In","Access Card Number":"AC-003","Access Card Returned":"No","Lanyard Given":"Yes","Lanyard Returned":"—","Meal Voucher Given":"No","Locker Needed":"No","Locker Preference":"—","Locker Number":"—","Locker Cleared":"—","T-Shirt Size":"L","T-Shirt Received":"Yes","T-Shirt Returned":"—","Notes":"Supporting guest welcome and directions"},
-{"ID":"VD-004","Name":"Jordan P.","Assignment":"Registration","Expected Time In":"07:00","Actual Time In":"06:55","Expected Time Out":"09:00","Actual Time Out":"09:05","Status":"Checked Out","Access Card Number":"AC-004","Access Card Returned":"Yes","Lanyard Given":"Yes","Lanyard Returned":"Yes","Meal Voucher Given":"Yes","Locker Needed":"Yes","Locker Preference":"Bottom","Locker Number":"L-04","Locker Cleared":"Yes","T-Shirt Size":"M","T-Shirt Received":"Yes","T-Shirt Returned":"Yes","Notes":"Shift completed; handover finished"},
-{"ID":"VD-005","Name":"Casey N.","Assignment":"Event Setup","Expected Time In":"07:00","Actual Time In":"—","Expected Time Out":"09:00","Actual Time Out":"—","Status":"Absent","Access Card Number":"—","Access Card Returned":"—","Lanyard Given":"No","Lanyard Returned":"—","Meal Voucher Given":"No","Locker Needed":"No","Locker Preference":"—","Locker Number":"—","Locker Cleared":"—","T-Shirt Size":"XL","T-Shirt Received":"No","T-Shirt Returned":"—","Notes":"Did not attend; coordinator notified"},
-{"ID":"VD-006","Name":"Riley T.","Assignment":"Eatery","Expected Time In":"08:00","Actual Time In":"—","Expected Time Out":"12:00","Actual Time Out":"—","Status":"Cancelled","Access Card Number":"—","Access Card Returned":"—","Lanyard Given":"No","Lanyard Returned":"—","Meal Voucher Given":"No","Locker Needed":"No","Locker Preference":"—","Locker Number":"—","Locker Cleared":"—","T-Shirt Size":"S","T-Shirt Received":"No","T-Shirt Returned":"—","Notes":"Cancelled before shift; replacement requested"},
-{"ID":"VD-007","Name":"Morgan L.","Assignment":"Steven's Lab","Expected Time In":"10:00","Actual Time In":"—","Expected Time Out":"14:00","Actual Time Out":"—","Status":"Scheduled","Access Card Number":"—","Access Card Returned":"—","Lanyard Given":"No","Lanyard Returned":"—","Meal Voucher Given":"No","Locker Needed":"—","Locker Preference":"—","Locker Number":"—","Locker Cleared":"—","T-Shirt Size":"M","T-Shirt Received":"No","T-Shirt Returned":"—","Notes":"Assist with activity preparation"},
-{"ID":"VD-008","Name":"Avery W.","Assignment":"CKM","Expected Time In":"10:00","Actual Time In":"—","Expected Time Out":"14:00","Actual Time Out":"—","Status":"Scheduled","Access Card Number":"—","Access Card Returned":"—","Lanyard Given":"No","Lanyard Returned":"—","Meal Voucher Given":"No","Locker Needed":"—","Locker Preference":"—","Locker Number":"—","Locker Cleared":"—","T-Shirt Size":"L","T-Shirt Received":"No","T-Shirt Returned":"—","Notes":"Report to station lead on arrival"},
-{"ID":"VD-009","Name":"Quinn G.","Assignment":"Front of the House","Expected Time In":"10:00","Actual Time In":"—","Expected Time Out":"14:00","Actual Time Out":"—","Status":"Scheduled","Access Card Number":"—","Access Card Returned":"—","Lanyard Given":"No","Lanyard Returned":"—","Meal Voucher Given":"No","Locker Needed":"—","Locker Preference":"—","Locker Number":"—","Locker Cleared":"—","T-Shirt Size":"XS","T-Shirt Received":"No","T-Shirt Returned":"—","Notes":"Support guest arrivals and wayfinding"},
-{"ID":"VD-010","Name":"Cameron D.","Assignment":"Registration","Expected Time In":"10:00","Actual Time In":"—","Expected Time Out":"14:00","Actual Time Out":"—","Status":"Scheduled","Access Card Number":"—","Access Card Returned":"—","Lanyard Given":"No","Lanyard Returned":"—","Meal Voucher Given":"No","Locker Needed":"—","Locker Preference":"—","Locker Number":"—","Locker Cleared":"—","T-Shirt Size":"XL","T-Shirt Received":"No","T-Shirt Returned":"—","Notes":"Assist with attendee check-in"},
-{"ID":"VD-011","Name":"Reese M.","Assignment":"Volunteer Support","Expected Time In":"11:00","Actual Time In":"—","Expected Time Out":"15:00","Actual Time Out":"—","Status":"Scheduled","Access Card Number":"—","Access Card Returned":"—","Lanyard Given":"No","Lanyard Returned":"—","Meal Voucher Given":"No","Locker Needed":"—","Locker Preference":"—","Locker Number":"—","Locker Cleared":"—","T-Shirt Size":"M","T-Shirt Received":"No","T-Shirt Returned":"—","Notes":"Provide break coverage"},
-{"ID":"VD-012","Name":"Skyler A.","Assignment":"Eatery","Expected Time In":"11:00","Actual Time In":"—","Expected Time Out":"15:00","Actual Time Out":"—","Status":"Scheduled","Access Card Number":"—","Access Card Returned":"—","Lanyard Given":"No","Lanyard Returned":"—","Meal Voucher Given":"No","Locker Needed":"—","Locker Preference":"—","Locker Number":"—","Locker Cleared":"—","T-Shirt Size":"S","T-Shirt Received":"No","T-Shirt Returned":"—","Notes":"Assist with serving and restocking"},
-{"ID":"VD-013","Name":"Parker L.","Assignment":"Steven's Lab","Expected Time In":"12:00","Actual Time In":"—","Expected Time Out":"16:00","Actual Time Out":"—","Status":"Scheduled","Access Card Number":"—","Access Card Returned":"—","Lanyard Given":"No","Lanyard Returned":"—","Meal Voucher Given":"No","Locker Needed":"—","Locker Preference":"—","Locker Number":"—","Locker Cleared":"—","T-Shirt Size":"L","T-Shirt Received":"No","T-Shirt Returned":"—","Notes":"Afternoon shift; receive handover"},
-{"ID":"VD-014","Name":"Rowan C.","Assignment":"CKM","Expected Time In":"12:00","Actual Time In":"—","Expected Time Out":"16:00","Actual Time Out":"—","Status":"Scheduled","Access Card Number":"—","Access Card Returned":"—","Lanyard Given":"No","Lanyard Returned":"—","Meal Voucher Given":"No","Locker Needed":"—","Locker Preference":"—","Locker Number":"—","Locker Cleared":"—","T-Shirt Size":"M","T-Shirt Received":"No","T-Shirt Returned":"—","Notes":"Afternoon station support"},
-{"ID":"VD-015","Name":"Emerson H.","Assignment":"Front of the House","Expected Time In":"12:00","Actual Time In":"—","Expected Time Out":"16:00","Actual Time Out":"—","Status":"Scheduled","Access Card Number":"—","Access Card Returned":"—","Lanyard Given":"No","Lanyard Returned":"—","Meal Voucher Given":"No","Locker Needed":"—","Locker Preference":"—","Locker Number":"—","Locker Cleared":"—","T-Shirt Size":"2XL","T-Shirt Received":"No","T-Shirt Returned":"—","Notes":"Support guest departures and directions"},
-{"ID":"VD-016","Name":"Finley Y.","Assignment":"Event Cleanup","Expected Time In":"14:00","Actual Time In":"—","Expected Time Out":"18:00","Actual Time Out":"—","Status":"Scheduled","Access Card Number":"—","Access Card Returned":"—","Lanyard Given":"No","Lanyard Returned":"—","Meal Voucher Given":"No","Locker Needed":"—","Locker Preference":"—","Locker Number":"—","Locker Cleared":"—","T-Shirt Size":"L","T-Shirt Received":"No","T-Shirt Returned":"—","Notes":"Assist with packing and cleanup"},
-{"ID":"VD-017","Name":"Dakota K.","Assignment":"Volunteer Support","Expected Time In":"14:00","Actual Time In":"—","Expected Time Out":"18:00","Actual Time Out":"—","Status":"Scheduled","Access Card Number":"—","Access Card Returned":"—","Lanyard Given":"No","Lanyard Returned":"—","Meal Voucher Given":"No","Locker Needed":"—","Locker Preference":"—","Locker Number":"—","Locker Cleared":"—","T-Shirt Size":"S","T-Shirt Received":"No","T-Shirt Returned":"—","Notes":"Support closing tasks and equipment returns"}
-];
+"use strict";
 
-const key='volunteer-desk-v2';
-const statuses=['Scheduled','Checked In','Checked Out','Absent','Cancelled'];
-const accessCards=Array.from({length:20},(_,i)=>'AC-'+String(i+1).padStart(3,'0'));
-const topLockers=[21,23,25,27,29,31,33,35,37,39];
-const bottomLockers=[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40];
-const $=id=>document.getElementById(id);
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let data=structuredClone(seed),active=null,mode='in',step=1,ascending=true,sorted=false,timer,stream=null;
+const STORE_KEY = "scienceCentreVolunteerDesk.v5";
 
-try{
-  const saved=JSON.parse(localStorage.getItem(key));
-  if(Array.isArray(saved)&&saved.length&&saved.every(r=>seed.every(s=>Object.keys(s).every(k=>k in r)))) data=saved;
-}catch(e){}
+const TSHIRT_INVENTORY = {
+  XS: 10,
+  S: 15,
+  M: 20,
+  L: 15,
+  XL: 10,
+  "2XL": 5
+};
 
-function notify(text){$('toast').textContent=text;$('toast').classList.remove('hidden');clearTimeout(timer);timer=setTimeout(()=>$('toast').classList.add('hidden'),3500)}
-function save(){try{localStorage.setItem(key,JSON.stringify(data));notify('Changes saved in this browser.')}catch(e){notify('Browser storage unavailable. Changes last only for this session.')}}
-function now(){const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
-function outstanding(r){return(r['Access Card Number']&&r['Access Card Number']!=='—'&&r['Access Card Returned']!=='Yes')||(r['Locker Number']&&r['Locker Number']!=='—'&&r['Locker Cleared']!=='Yes')}
-function cardTaken(card){return data.some(r=>r['Access Card Number']===card&&r['Access Card Returned']!=='Yes')}
-function lockerTaken(n){return data.some(r=>String(r['Locker Number'])===String(n)&&r['Locker Cleared']!=='Yes')}
-function availableCards(){return accessCards.filter(c=>!cardTaken(c))}
-function availableLockers(pref){const list=pref==='Top'?topLockers:pref==='Bottom'?bottomLockers:[...topLockers,...bottomLockers];return list.filter(n=>!lockerTaken(n))}
+const ACCESS_CARDS = Array.from(
+  { length: 20 },
+  (_, index) => `AC-${String(index + 1).padStart(3, "0")}`
+);
 
-function options(){
-  const old=$('assignment').value;
-  $('assignment').innerHTML='<option value="">All assignments</option>'+[...new Set(data.map(r=>r.Assignment))].sort().map(v=>`<option>${esc(v)}</option>`).join('');
-  $('assignment').value=old;
-}
-$('status').innerHTML+=statuses.map(v=>`<option>${v}</option>`).join('');
-options();
+const TOP_LOCKERS = [21, 23, 25, 27, 29, 31, 33, 35, 37, 39];
+const BOTTOM_LOCKERS = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40];
 
-function filtered(){
-  const q=$('search').value.trim().toLowerCase();
-  let result=data.filter(r=>(!q||Object.values(r).some(v=>String(v).toLowerCase().includes(q)))&&(!$('status').value||r.Status===$('status').value)&&(!$('assignment').value||r.Assignment===$('assignment').value)&&(!$('equipment').checked||outstanding(r)));
-  if(sorted)result.sort((a,b)=>a.Name.localeCompare(b.Name)*(ascending?1:-1));
-  return result;
-}
-function display(v){return esc(v||'—')}
+const sampleCSV = [
+  "ID,Name,Assignment,Expected Time In,Actual Time In,Expected Time Out,Actual Time Out,Status,Lanyard Given,Lanyard Returned,Name Tag Given,Meal Voucher Given,Access Card Number,Access Card Returned,Locker Number,Locker Cleared,T-Shirt Size,T-Shirt Received,T-Shirt Returned,Gift Received,Notes",
+  "1,Alex M.,Steven's Lab,8:00,7:55,12:00,—,Checked In,Yes,No,Yes,Yes,AC-001,No,L-01,No,M,Yes,No,No,Arrived early; orientation completed",
+  "2,Jamie C.,CKM,8:00,8:03,12:00,—,Checked In,Yes,No,Yes,Yes,AC-002,No,L-02,No,S,Yes,No,No,Assigned to station lead",
+  "3,Taylor B.,Front of the House,8:00,7:58,12:00,—,Checked In,Yes,No,Yes,Yes,AC-003,No,L-03,No,L,Yes,No,No,Supporting guest welcome and directions",
+  "4,Jordan P.,Registration,7:00,6:55,9:00,9:05,Checked Out,Yes,Yes,Yes,Yes,AC-004,Yes,L-04,Yes,M,Yes,Yes,Yes,Shift completed; handover finished",
+  "5,Casey N.,Event Setup,7:00,—,9:00,—,Absent,No,—,No,No,—,—,—,—,—,XL,No,No,No,Did not attend; coordinator notified",
+  "6,Riley T.,Eatery,8:00,—,12:00,—,Cancelled,No,—,No,No,—,—,—,—,—,S,No,No,No,Cancelled before shift; replacement requested",
+  "7,Morgan L.,Steven's Lab,10:00,—,14:00,—,Scheduled,No,—,No,No,—,—,—,—,—,M,No,No,No,Assist with activity preparation",
+  "8,Avery W.,CKM,10:00,—,14:00,—,Scheduled,No,—,No,No,—,—,—,—,—,L,No,No,No,Report to station lead on arrival",
+  "9,Quinn G.,Front of the House,10:00,—,14:00,—,Scheduled,No,—,No,No,—,—,—,—,—,XS,No,No,No,Support guest arrivals and wayfinding",
+  "10,Cameron D.,Registration,10:00,—,14:00,—,Scheduled,No,—,No,No,—,—,—,—,—,XL,No,No,No,Assist with attendee check-in",
+  "11,Reese M.,Volunteer Support,11:00,—,15:00,—,Scheduled,No,—,No,No,—,—,—,—,—,M,No,No,No,Provide break coverage",
+  "12,Skyler A.,Eatery,11:00,—,15:00,—,Scheduled,No,—,No,No,—,—,—,—,—,S,No,No,No,Assist with serving and restocking",
+  "13,Parker L.,Steven's Lab,12:00,—,16:00,—,Scheduled,No,—,No,No,—,—,—,—,—,L,No,No,No,Afternoon shift; receive handover",
+  "14,Rowan C.,CKM,12:00,—,16:00,—,Scheduled,No,—,No,No,—,—,—,—,—,M,No,No,No,Afternoon station support",
+  "15,Emerson H.,Front of the House,12:00,—,16:00,—,Scheduled,No,—,No,No,—,—,—,—,—,2XL,No,No,No,Support guest departures and directions",
+  "16,Finley Y.,Event Cleanup,14:00,—,18:00,—,Scheduled,No,—,No,No,—,—,—,—,—,L,No,No,No,Assist with packing and cleanup",
+  "17,Dakota K.,Volunteer Support,14:00,—,18:00,—,Scheduled,No,—,No,No,—,—,—,—,—,S,No,No,No,Support closing tasks and equipment returns"
+].join("\n");
 
-function render(){
-  const cards=[['Total volunteers',data.length,'Across all assignments'],['Checked in',data.filter(r=>r.Status==='Checked In').length,'Currently on shift'],['Scheduled',data.filter(r=>r.Status==='Scheduled').length,'Awaiting check-in'],['Checked out',data.filter(r=>r.Status==='Checked Out').length,'Shifts completed']];
-  $('stats').innerHTML=cards.map(([label,n,hint],i)=>`<div class="bg-white border rounded-2xl p-5"><p class="text-sm text-slate-500">${label}</p><p class="text-3xl font-bold mt-2 ${i===1?'text-emerald-600':'text-slate-900'}">${n}</p><p class="text-xs text-slate-400 mt-2">${hint}</p></div>`).join('');
-  const list=filtered();
-  $('count').textContent=data.length;
-  $('summary').textContent=`Showing ${list.length} of ${data.length} volunteers`;
-  $('empty').hidden=!!list.length;
-  $('roster').innerHTML=list.map(r=>`<tr class="hover:bg-slate-50/80">
-    <td class="px-6 py-4"><button data-open="${esc(r.ID)}" class="font-semibold text-indigo-700 hover:underline text-left">${esc(r.Name)}</button><div class="text-xs text-slate-400 mt-1">${esc(r.ID)}</div></td>
-    <td class="px-4 py-4 font-mono text-xs">${esc(r.ID)}</td>
-    <td class="px-4 py-4 whitespace-nowrap">${esc(r.Assignment)}</td>
-    <td class="px-4 py-4 whitespace-nowrap text-slate-600">${display(r['Expected Time In'])} – ${display(r['Expected Time Out'])}</td>
-    <td class="px-4 py-4 whitespace-nowrap text-slate-600">${display(r['Actual Time In'])} / ${display(r['Actual Time Out'])}</td>
-    <td class="px-4 py-4"><span class="badge ${r.Status.replaceAll(' ','')}">${esc(r.Status)}</span></td>
-    <td class="px-4 py-4 text-xs whitespace-nowrap"><div>Card: ${display(r['Access Card Number'])}</div><div class="mt-1 ${outstanding(r)?'text-amber-700':'text-slate-400'}">${outstanding(r)?'Return / clearance pending':'No outstanding equipment'}</div></td>
-    <td class="px-6 py-4 text-right whitespace-nowrap">${['Scheduled','Checked In'].includes(r.Status)?`<button data-action="${esc(r.ID)}" class="px-3 py-2 rounded-lg text-xs font-semibold ${r.Status==='Scheduled'?'bg-indigo-50 text-indigo-700 hover:bg-indigo-100':'bg-slate-100 text-slate-700 hover:bg-slate-200'}">${r.Status==='Scheduled'?'Check in':'Check out'}</button>`:`<button data-open="${esc(r.ID)}" class="text-xs text-indigo-600 hover:underline">View details</button>`}</td>
-  </tr>`).join('');
+let state = null;
+let flow = null;
+
+function parseCSV(text) {
+  const rows = text
+    .trim()
+    .split(/\r?\n/)
+    .map(row => row.split(",").map(value => value.trim()));
+
+  const headers = rows.shift();
+
+  return rows.map(row => {
+    const record = {};
+
+    headers.forEach((header, index) => {
+      record[header] = row[index] || "";
+    });
+
+    return record;
+  });
 }
 
-/* ---------- Wizard ---------- */
-function openFlow(kind){mode=kind;step=1;active=null;$('flowKind').textContent=kind==='in'?'Check-in':'Check-out';$('flowTitle').textContent='Find volunteer';showStep();$('flow').showModal()}
-function showStep(){
-  document.querySelectorAll('#flowForm .step').forEach(s=>s.classList.toggle('active',+s.dataset.step===step));
-  $('flowBack').hidden=step===1;
-  $('flowNext').hidden=step>=5;
-  $('flowNext').textContent=step===1?'Continue':step===2?(mode==='in'?'Begin check-in':'Begin check-out'):(step===4?'Complete check-out':'Complete check-in');
-  if(step===2&&active)renderConfirm();
-  if(step===3&&mode==='in')renderCheckIn();
-  if(step===4&&mode==='out')renderCheckOut();
-}
-function findMatches(q){
-  q=q.trim().toLowerCase();
-  if(!q)return[];
-  return data.filter(r=>r.ID.toLowerCase().includes(q)||r.Name.toLowerCase().includes(q)).slice(0,12);
-}
-function renderResults(){
-  const matches=findMatches($('findInput').value);
-  $('notFound').classList.toggle('hidden',!( $('findInput').value.trim() && !matches.length ));
-  $('findResults').innerHTML=matches.map(r=>{
-    const eligible=mode==='in'?r.Status==='Scheduled':r.Status==='Checked In';
-    return `<button type="button" data-pick="${esc(r.ID)}" class="w-full text-left border rounded-xl p-3 hover:bg-indigo-50 ${eligible?'':'opacity-60'}">
-      <div class="font-semibold">${esc(r.Name)} <span class="font-mono text-xs text-slate-500">${esc(r.ID)}</span></div>
-      <div class="text-xs text-slate-500">${esc(r.Assignment)} · ${esc(r['Expected Time In'])}–${esc(r['Expected Time Out'])} · ${esc(r.Status)}</div>
-      ${eligible?'':`<div class="text-xs text-amber-700 mt-1">Not eligible for ${mode==='in'?'check-in':'check-out'}.</div>`}
-    </button>`;
-  }).join('');
-}
-function renderConfirm(){
-  const r=active;
-  $('confirmCard').innerHTML=`<div class="font-bold text-lg">${esc(r.Name)} <span class="font-mono text-xs text-slate-500">${esc(r.ID)}</span></div>
-  <div class="grid sm:grid-cols-2 gap-3 mt-3 text-sm">
-    <div><span class="text-slate-500">Assignment</span><div class="font-semibold">${esc(r.Assignment)}</div></div>
-    <div><span class="text-slate-500">Status</span><div class="font-semibold">${esc(r.Status)}</div></div>
-    <div><span class="text-slate-500">Expected time in</span><div class="font-semibold">${esc(r['Expected Time In'])}</div></div>
-    <div><span class="text-slate-500">Expected time out</span><div class="font-semibold">${esc(r['Expected Time Out'])}</div></div>
-    ${mode==='out'?`<div><span class="text-slate-500">Actual time in</span><div class="font-semibold">${esc(r['Actual Time In'])}</div></div>`:''}
-  </div>`;
-  $('confirmActions').innerHTML=`<button type="button" id="confirmAction" class="bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-semibold">${mode==='in'?'Check in volunteer':'Check out volunteer'}</button>`;
-  $('confirmAction').onclick=()=>{
-    if(mode==='in'){r.Status='Checked In';r['Actual Time In']=now();step=3}
-    else{r.Status='Checked Out';r['Actual Time Out']=now();step=4}
-    save();showStep();
+function createDefaultState() {
+  return {
+    volunteers: parseCSV(sampleCSV),
+    inventory: {
+      tshirts: { ...TSHIRT_INVENTORY },
+      accessCards: ACCESS_CARDS.map(number => ({
+        number,
+        status: "Available",
+        assignedTo: null
+      })),
+      lockers: [...TOP_LOCKERS, ...BOTTOM_LOCKERS].map(number => ({
+        number,
+        type: TOP_LOCKERS.includes(number) ? "Top" : "Bottom",
+        status: "Available",
+        assignedTo: null
+      }))
+    }
   };
 }
-function select(label,name,opts,current){return `<label class="block"><span class="block text-xs font-semibold text-slate-500 mb-2">${label}</span><select name="${name}" class="field">${opts.map(v=>`<option ${v===current?'selected':''}>${esc(v)}</option>`).join('')}</select></label>`}
-function renderCheckIn(){
-  const r=active;
-  const cards=availableCards();
-  const lockers=availableLockers(r['Locker Preference']);
-  $('checkInSteps').innerHTML=`
-  <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
-    <div class="font-semibold">${esc(r.Name)} · ${esc(r.ID)}</div>
-    <div class="text-sm text-slate-600 mt-1">${esc(r.Assignment)} · Expected ${esc(r['Expected Time In'])}–${esc(r['Expected Time Out'])} · Checked in at ${esc(r['Actual Time In'])}</div>
-  </div>
-  <div class="grid sm:grid-cols-2 gap-4">
-    ${select('Lanyard','Lanyard Given',['Yes','No'],r['Lanyard Given']==='Yes'?'Yes':'No')}
-    ${select('Meal voucher','Meal Voucher Given',['Yes','No'],r['Meal Voucher Given']==='Yes'?'Yes':'No')}
-  </div>
-  <div class="border rounded-xl p-4">
-    <p class="font-semibold text-sm mb-2">Access card</p>
-    ${select('Access card issued','Access Card Number',['—',...cards],r['Access Card Number'])}
-    <p class="text-xs text-slate-500 mt-2">Available: ${cards.length?cards.join(', '):'None'} · Taken: ${accessCards.filter(cardTaken).join(', ')||'None'}</p>
-    <p class="text-xs text-amber-700 mt-1">A card already issued to another volunteer cannot be selected until it is returned.</p>
-  </div>
-  <div class="border rounded-xl p-4">
-    <p class="font-semibold text-sm mb-2">Locker</p>
-    <div class="grid sm:grid-cols-2 gap-4">
-      ${select('Locker needed?','Locker Needed',['No','Yes'],r['Locker Needed']==='Yes'?'Yes':'No')}
-      ${select('Preference','Locker Preference',['—','Top','Bottom'],r['Locker Preference'])}
-    </div>
-    <label class="block mt-3"><span class="block text-xs font-semibold text-slate-500 mb-2">Assign locker</span>
-      <select name="Locker Number" class="field"><option value="—">—</option>${lockers.map(n=>`<option value="L-${n}" ${r['Locker Number']==='L-'+n?'selected':''}>L-${n}</option>`).join('')}</select>
-    </label>
-    <p class="text-xs text-slate-500 mt-2">Top available: ${availableLockers('Top').join(', ')||'None'} · Bottom available: ${availableLockers('Bottom').join(', ')||'None'}</p>
-  </div>
-  <div class="grid sm:grid-cols-2 gap-4">
-    ${select('T-shirt size','T-Shirt Size',['XS','S','M','L','XL','2XL','3XL','—'],r['T-Shirt Size'])}
-    ${select('T-shirt given?','T-Shirt Received',['Yes','No'],r['T-Shirt Received']==='Yes'?'Yes':'No')}
-  </div>
-  <label class="block"><span class="block text-xs font-semibold text-slate-500 mb-2">Notes</span><textarea name="Notes" rows="3" class="field">${esc(r.Notes)}</textarea></label>`;
-}
-function renderCheckOut(){
-  const r=active;
-  $('checkOutSteps').innerHTML=`
-  <div class="bg-slate-50 border rounded-xl p-4">
-    <div class="font-semibold">${esc(r.Name)} · ${esc(r.ID)}</div>
-    <div class="text-sm text-slate-600 mt-1">${esc(r.Assignment)} · Expected ${esc(r['Expected Time In'])}–${esc(r['Expected Time Out'])} · Actual in ${esc(r['Actual Time In'])} · Checked out at ${esc(r['Actual Time Out'])}</div>
-  </div>
-  <div class="grid sm:grid-cols-2 gap-4">
-    ${select('Lanyard handed back?','Lanyard Returned',['Yes','No','—'],r['Lanyard Returned'])}
-    ${select('Access card returned?','Access Card Returned',['Yes','No','—'],r['Access Card Returned'])}
-    ${r['Locker Number']&&r['Locker Number']!=='—'?select('Locker cleared out?','Locker Cleared',['Yes','No'],r['Locker Cleared']):'<div class="text-sm text-slate-500">No locker was assigned.</div>'}
-    ${r['T-Shirt Received']==='Yes'?select('T-shirt returned?','T-Shirt Returned',['Yes','No'],r['T-Shirt Returned']):'<div class="text-sm text-slate-500">No t-shirt was issued.</div>'}
-  </div>
-  <label class="block"><span class="block text-xs font-semibold text-slate-500 mb-2">Notes</span><textarea name="Notes" rows="3" class="field">${esc(r.Notes)}</textarea></label>`;
-}
-function collectAndFinish(){
-  const form=$('flowForm');
-  if(step===3){
-    const f=new FormData(form);
-    const card=f.get('Access Card Number');
-    if(card&&card!=='—'&&cardTaken(card)&&card!==active['Access Card Number']){notify('That access card is still assigned to another volunteer.');return}
-    const locker=f.get('Locker Number');
-    if(locker&&locker!=='—'&&lockerTaken(locker)&&locker!==active['Locker Number']){notify('That locker is already in use.');return}
-    for(const [k,v] of f)active[k]=v.trim()||'—';
-    if(active['Locker Needed']!=='Yes'){active['Locker Number']='—';active['Locker Cleared']='—'}
-    save();step=5;$('doneMessage').textContent=`${active.Name} is checked in. Actual time in: ${active['Actual Time In']}.`;
-  }else if(step===4){
-    const f=new FormData(form);
-    for(const [k,v] of f)active[k]=v.trim()||'—';
-    if(active['Access Card Returned']==='Yes')active['Access Card Number']=active['Access Card Number'];
-    save();step=5;$('doneMessage').textContent=`${active.Name} is checked out. Actual time out: ${active['Actual Time Out']}.`;
+
+function loadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY));
+
+    if (saved && Array.isArray(saved.volunteers) && saved.inventory) {
+      return saved;
+    }
+  } catch (error) {
+    console.warn("Could not load saved data.", error);
   }
-  showStep();
+
+  return createDefaultState();
 }
 
-/* QR scanning */
-let scanning=false;
-async function startScan(){
-  if(!('BarcodeDetector' in window)){$('scanMsg').textContent='QR scanning is not supported in this browser. Please type the unique ID or name.';return}
-  try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
-    const video=$('scanVideo');video.srcObject=stream;await video.play();
-    $('scanBox').classList.remove('hidden');scanning=true;
-    const detector=new BarcodeDetector({formats:['qr_code']});
-    const loop=async()=>{if(!scanning)return;try{const codes=await detector.detect(video);if(codes.length){stopScan();$('findInput').value=codes[0].rawValue;renderResults();notify('QR code detected.')}}catch(e){}requestAnimationFrame(loop)};
-    loop();
-  }catch(e){$('scanMsg').textContent='Camera access was unavailable. Please type the unique ID or name.'}
+function saveState() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
 }
-function stopScan(){scanning=false;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('scanBox').classList.add('hidden')}
 
-/* Events */
-$('startCheckIn').onclick=()=>openFlow('in');
-$('startCheckOut').onclick=()=>openFlow('out');
-$('findInput').addEventListener('input',renderResults);
-$('scanBtn').onclick=()=>scanning?stopScan():startScan();
-$('flowForm').addEventListener('click',e=>{
-  const pick=e.target.closest('[data-pick]');
-  if(!pick)return;
-  const r=data.find(x=>x.ID===pick.dataset.pick);
-  const eligible=mode==='in'?r.Status==='Scheduled':r.Status==='Checked In';
-  if(!eligible){notify(`This volunteer is not eligible for ${mode==='in'?'check-in':'check-out'}.`);return}
-  active=r;step=2;showStep();
-});
-$('flowNext').onclick=()=>{if(step===1){const matches=findMatches($('findInput').value);if(matches.length!==1){notify(matches.length?'Select a volunteer from the results.':'Enter a unique ID or name to continue.');return}active=matches[0];step=2;showStep()}else if(step===3||step===4)collectAndFinish()};
-$('flowBack').onclick=()=>{if(step>1){step--;showStep()}};
-$('flowCancel').onclick=$('flowClose').onclick=()=>{stopScan();$('flow').close()};
-$('roster').addEventListener('click',e=>{
-  const open=e.target.closest('[data-open]'),action=e.target.closest('[data-action]');
-  if(open)openDetail(open.dataset.open);
-  if(action){const r=data.find(x=>x.ID===action.dataset.action);openFlow(r.Status==='Scheduled'?'in':'out');$('findInput').value=r.ID;renderResults()}
-});
-$('edit').addEventListener('submit',e=>{
-  e.preventDefault();const f=new FormData(e.target);
-  for(const [k,v] of f)active[k]=v.trim()||'—';
-  save();options();render();$('detail').close();
-});
-$('close').onclick=$('cancel').onclick=()=>$('detail').close();
-['search','status','assignment','equipment'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',render));
-$('clear').onclick=()=>{$('search').value='';$('status').value='';$('assignment').value='';$('equipment').checked=false;render()};
-$('sort').onclick=()=>{if(sorted)ascending=!ascending;sorted=true;render()};
-$('export').onclick=()=>{
-  const cols=Object.keys(seed[0]);
-  const cell=v=>'"'+String(v??'').replaceAll('"','""').replace(/^[=+@-]/,"'$&")+'"';
-  const csv='﻿'+[cols,...filtered().map(r=>cols.map(k=>r[k]))].map(r=>r.map(cell).join(',')).join('\r\n');
-  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-  const a=document.createElement('a');a.href=url;a.download='volunteer-roster.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);notify('Filtered roster exported.');
-};
-$('reset').onclick=()=>{if(confirm('Restore the original 17 sample records? All changes saved in this browser will be removed.')){data=structuredClone(seed);save();options();render()}};
-
-// Home screen navigation
-const home=$('home'),app=$('app');
-function showHome(){home.classList.remove('hidden');app.classList.add('hidden');window.scrollTo({top:0,behavior:'smooth'});}
-function showApp(){home.classList.add('hidden');app.classList.remove('hidden');}
-document.querySelectorAll('[data-home-action]').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    const action=btn.dataset.homeAction;
-    showApp();
-    if(action==='checkin'){$('startCheckIn').click();}
-    else if(action==='checkout'){$('startCheckOut').click();}
-    else if(action==='dashboard'){window.scrollTo({top:0,behavior:'smooth'});}
-    else if(action==='list'){document.getElementById('roster').scrollIntoView({behavior:'smooth'});}
+function nowTime() {
+  return new Date().toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit"
   });
+}
+
+function showToast(message, type = "success") {
+  const toast = document.getElementById("toast");
+  const colors = {
+    success: "bg-emerald-600",
+    error: "bg-rose-600",
+    info: "bg-slate-800"
+  };
+
+  toast.className = `fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-xl text-white shadow-lg ${colors[type]}`;
+  toast.textContent = message;
+  toast.classList.remove("hidden");
+
+  setTimeout(() => toast.classList.add("hidden"), 3200);
+}
+
+function setBreadcrumb(steps) {
+  const breadcrumb = document.getElementById("breadcrumb");
+
+  breadcrumb.innerHTML = steps
+    .map((step, index) => {
+      const isLast = index === steps.length - 1;
+
+      let action = "goHome()";
+
+      if (step === "Dashboard") action = "startFlow('dashboard')";
+      if (step === "Check-in") action = "startFlow('checkin')";
+      if (step === "Check-out") action = "startFlow('checkout')";
+      if (step === "Find Volunteer") action = "goToFlowStep(1)";
+      if (step === "Confirm Shift") action = "goToFlowStep(2)";
+      if (step === "Assets & Notes") action = "goToFlowStep(3)";
+      if (step === "Return Assets") action = "goToFlowStep(2)";
+
+      return `
+        <button
+          onclick="${action}"
+          class="px-2 py-1 rounded-lg ${
+            isLast
+              ? "text-slate-900 font-semibold bg-slate-100"
+              : "text-sky-700 hover:bg-sky-50"
+          }"
+        >
+          ${step}
+        </button>
+        ${isLast ? "" : '<span class="text-slate-300">/</span>'}
+      `;
+    })
+    .join("");
+}
+
+function goHome() {
+  flow = null;
+  renderHome();
+}
+
+function goToFlowStep(step) {
+  if (!flow) return;
+
+  if (flow.type === "checkin") {
+    flow.step = Math.min(step, 3);
+  }
+
+  if (flow.type === "checkout") {
+    flow.step = Math.min(step, 2);
+  }
+
+  render();
+}
+
+function startFlow(type) {
+  flow = {
+    type,
+    step: 1,
+    volunteer: null
+  };
+
+  render();
+}
+
+function findVolunteer(query) {
+  const value = String(query || "").trim().toLowerCase();
+
+  return state.volunteers.find(volunteer => {
+    return (
+      String(volunteer.ID).toLowerCase() === value ||
+      String(volunteer.Name).toLowerCase().includes(value)
+    );
+  });
+}
+
+function volunteerOptions() {
+  return state.volunteers
+    .map(
+      volunteer => `
+        <option value="${volunteer.ID}">
+          ${volunteer.Name} — ${volunteer.Assignment}
+        </option>
+      `
+    )
+    .join("");
+}
+
+function renderHome() {
+  flow = null;
+  setBreadcrumb(["Home"]);
+
+  document.getElementById("main").innerHTML = `
+    <section class="fade-in">
+      <div class="rounded-3xl bg-gradient-to-br from-sky-600 to-indigo-700 text-white p-8 sm:p-12 shadow-xl">
+        <h2 class="text-2xl sm:text-4xl font-extrabold">Welcome to Volunteer Desk</h2>
+
+        <p class="mt-3 text-sky-100 max-w-2xl">
+          Manage volunteer arrivals, departures, shift assignments, and physical assets in one streamlined workflow.
+        </p>
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-3">
+          <button onclick="startFlow('checkin')" class="bg-white text-sky-700 hover:bg-sky-50 rounded-2xl p-6 text-left shadow-lg">
+            <div class="text-lg font-bold">Check-in</div>
+            <div class="mt-1 text-sm opacity-80">Register arrival and issue assets</div>
+          </button>
+
+          <button onclick="startFlow('checkout')" class="bg-white text-indigo-700 hover:bg-indigo-50 rounded-2xl p-6 text-left shadow-lg">
+            <div class="text-lg font-bold">Check-out</div>
+            <div class="mt-1 text-sm opacity-80">Return assets and complete shift</div>
+          </button>
+
+          <button onclick="startFlow('dashboard')" class="bg-white/10 text-white hover:bg-white/20 border border-white/30 rounded-2xl p-6 text-left shadow-lg">
+            <div class="text-lg font-bold">Dashboard</div>
+            <div class="mt-1 text-sm opacity-80">Review roster and inventory</div>
+          </button>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderCheckIn() {
+  const steps = [
+    "Home",
+    "Check-in",
+    flow.step === 1 ? "Find Volunteer" : flow.step === 2 ? "Confirm Shift" : "Assets & Notes"
+  ];
+
+  setBreadcrumb(steps);
+
+  if (flow.step === 1) {
+    document.getElementById("main").innerHTML = `
+      <section class="fade-in max-w-3xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h2 class="text-xl font-bold text-slate-900">Find volunteer</h2>
+          <p class="text-sm text-slate-500 mt-1">Scan the volunteer QR/ID or search by name.</p>
+
+          <div class="mt-5 grid gap-4 sm:grid-cols-2">
+            <div>
+              <label class="text-sm font-medium">Scan or enter ID</label>
+              <input id="scanId" placeholder="e.g. 1" />
+            </div>
+
+            <div>
+              <label class="text-sm font-medium">Or search name</label>
+              <input id="searchName" list="volunteers" placeholder="Start typing a name" />
+              <datalist id="volunteers">${volunteerOptions()}</datalist>
+            </div>
+          </div>
+
+          <div class="mt-6 flex justify-between">
+            <button onclick="goHome()" class="px-4 py-2 rounded-xl border border-slate-300">Back</button>
+            <button onclick="locateCheckInVolunteer()" class="px-5 py-2 rounded-xl bg-sky-600 text-white font-semibold">Continue</button>
+          </div>
+        </div>
+      </section>
+    `;
+
+    return;
+  }
+
+  if (flow.step === 2) {
+    const volunteer = flow.volunteer;
+
+    document.getElementById("main").innerHTML = `
+      <section class="fade-in max-w-3xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-bold">${volunteer.Name}</h2>
+              <p class="text-sm text-slate-500">Volunteer ID ${volunteer.ID}</p>
+            </div>
+
+            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-700">
+              ${volunteer.Status}
+            </span>
+          </div>
+
+          <div class="mt-5 grid sm:grid-cols-2 gap-4">
+            <div class="rounded-xl bg-slate-50 p-4">
+              <div class="text-xs text-slate-500">Shift assignment</div>
+              <div class="font-semibold">${volunteer.Assignment}</div>
+            </div>
+
+            <div class="rounded-xl bg-slate-50 p-4">
+              <div class="text-xs text-slate-500">Expected time in / out</div>
+              <div class="font-semibold">
+                ${volunteer["Expected Time In"]} – ${volunteer["Expected Time Out"]}
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 flex justify-between">
+            <button onclick="goToFlowStep(1)" class="px-4 py-2 rounded-xl border border-slate-300">Back</button>
+            <button onclick="confirmCheckIn()" class="px-5 py-2 rounded-xl bg-emerald-600 text-white font-semibold">Check in volunteer</button>
+          </div>
+        </div>
+      </section>
+    `;
+
+    return;
+  }
+
+  const volunteer = flow.volunteer;
+
+  const availableTshirts = Object.keys(state.inventory.tshirts)
+    .filter(size => state.inventory.tshirts[size] > 0)
+    .map(
+      size => `
+        <option value="${size}">
+          ${size} — ${state.inventory.tshirts[size]} available
+        </option>
+      `
+    )
+    .join("");
+
+  const availableCards = state.inventory.accessCards
+    .filter(card => card.status === "Available")
+    .map(card => `<option value="${card.number}">${card.number}</option>`)
+    .join("");
+
+  document.getElementById("main").innerHTML = `
+    <section class="fade-in max-w-4xl mx-auto">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <h2 class="text-xl font-bold">Asset management</h2>
+        <p class="text-sm text-slate-500">Issue required and optional items to ${volunteer.Name}.</p>
+
+        <div class="mt-5 space-y-3">
+          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+            <input id="lanyard" type="checkbox" checked class="h-5 w-5" />
+            <span><strong>Lanyard given</strong> <span class="text-rose-600 text-xs">(required)</span></span>
+          </label>
+
+          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+            <input id="nameTag" type="checkbox" checked class="h-5 w-5" />
+            <span><strong>Name tag given</strong> <span class="text-rose-600 text-xs">(required)</span></span>
+          </label>
+
+          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+            <input id="mealVoucher" type="checkbox" checked class="h-5 w-5" />
+            <span><strong>Meal voucher given</strong> <span class="text-rose-600 text-xs">(required)</span></span>
+          </label>
+
+          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+            <input id="tshirt" type="checkbox" checked class="h-5 w-5" />
+            <span><strong>T-shirt given</strong> <span class="text-rose-600 text-xs">(required)</span></span>
+          </label>
+
+          <select id="tshirtSize">
+            <option value="">Select T-shirt size</option>
+            ${availableTshirts}
+          </select>
+
+          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+            <input id="accessCard" type="checkbox" class="h-5 w-5" />
+            <span><strong>Access card given</strong> <span class="text-slate-500 text-xs">(optional)</span></span>
+          </label>
+
+          <select id="accessCardNumber">
+            <option value="">Select access card</option>
+            ${availableCards}
+          </select>
+
+          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+            <input id="locker" type="checkbox" class="h-5 w-5" />
+            <span><strong>Locker assigned</strong> <span class="text-slate-500 text-xs">(optional)</span></span>
+          </label>
+
+          <select id="lockerPreference" onchange="updateLockerOptions()">
+            <option value="">Select locker preference</option>
+            <option value="Top">Top locker</option>
+            <option value="Bottom">Bottom locker</option>
+          </select>
+
+          <select id="lockerNumber">
+            <option value="">Select available locker</option>
+          </select>
+
+          <div>
+            <label class="text-sm font-medium">Notes</label>
+            <textarea id="notes" rows="3" placeholder="Handover notes or special instructions"></textarea>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-between">
+          <button onclick="goToFlowStep(2)" class="px-4 py-2 rounded-xl border border-slate-300">Back</button>
+          <button onclick="completeCheckIn()" class="px-5 py-2 rounded-xl bg-emerald-600 text-white font-semibold">Complete check-in</button>
+        </div>
+      </div>
+    </section>
+  `;
+
+  updateLockerOptions();
+}
+
+function updateLockerOptions() {
+  const preference = document.getElementById("lockerPreference").value;
+
+  const available = state.inventory.lockers.filter(locker => {
+    return locker.status === "Available" && (!preference || locker.type === preference);
+  });
+
+  document.getElementById("lockerNumber").innerHTML = available
+    .map(
+      locker => `
+        <option value="${locker.number}">
+          ${locker.type} locker ${locker.number}
+        </option>
+      `
+    )
+    .join("");
+}
+
+function locateCheckInVolunteer() {
+  const id = document.getElementById("scanId").value;
+  const name = document.getElementById("searchName").value;
+
+  const volunteer = id ? findVolunteer(id) : findVolunteer(name);
+
+  if (!volunteer) {
+    showToast("Volunteer not found. Check the ID or name.", "error");
+    return;
+  }
+
+  if (volunteer.Status === "Checked In") {
+    showToast(`${volunteer.Name} is already checked in.`, "error");
+    return;
+  }
+
+  flow.volunteer = volunteer;
+  flow.step = 2;
+  render();
+}
+
+function confirmCheckIn() {
+  flow.volunteer["Actual Time In"] = nowTime();
+  flow.volunteer.Status = "Checked In";
+  flow.step = 3;
+  render();
+}
+
+function completeCheckIn() {
+  const volunteer = flow.volunteer;
+
+  const lanyard = document.getElementById("lanyard").checked;
+  const nameTag = document.getElementById("nameTag").checked;
+  const mealVoucher = document.getElementById("mealVoucher").checked;
+  const tshirt = document.getElementById("tshirt").checked;
+  const tshirtSize = document.getElementById("tshirtSize").value;
+  const accessCard = document.getElementById("accessCard").checked;
+  const accessCardNumber = document.getElementById("accessCardNumber").value;
+  const locker = document.getElementById("locker").checked;
+  const lockerNumber = document.getElementById("lockerNumber").value;
+  const notes = document.getElementById("notes").value.trim();
+
+  if (!lanyard) return showToast("Lanyard must be issued.", "error");
+  if (!nameTag) return showToast("Name tag must be issued.", "error");
+  if (!mealVoucher) return showToast("Meal voucher must be issued.", "error");
+
+  if (tshirt && !tshirtSize) return showToast("Select a T-shirt size.", "error");
+  if (accessCard && !accessCardNumber) return showToast("Select an access card.", "error");
+  if (locker && !lockerNumber) return showToast("Select a locker.", "error");
+
+  volunteer["Lanyard Given"] = "Yes";
+  volunteer["Lanyard Returned"] = "No";
+  volunteer["Name Tag Given"] = "Yes";
+  volunteer["Meal Voucher Given"] = "Yes";
+
+  volunteer["T-Shirt Received"] = tshirt ? "Yes" : "No";
+  volunteer["T-Shirt Returned"] = "No";
+
+  if (tshirt) {
+    volunteer["T-Shirt Size"] = tshirtSize;
+    state.inventory.tshirts[tshirtSize]--;
+  }
+
+  volunteer["Access Card Number"] = accessCard ? accessCardNumber : "—";
+  volunteer["Access Card Returned"] = "No";
+
+  if (accessCard) {
+    const card = state.inventory.accessCards.find(item => item.number === accessCardNumber);
+
+    if (card) {
+      card.status = "Assigned";
+      card.assignedTo = volunteer.ID;
+    }
+  }
+
+  volunteer["Locker Number"] = locker ? lockerNumber : "—";
+  volunteer["Locker Cleared"] = "No";
+
+  if (locker) {
+    const selectedLocker = state.inventory.lockers.find(
+      item => String(item.number) === String(lockerNumber)
+    );
+
+    if (selectedLocker) {
+      selectedLocker.status = "Assigned";
+      selectedLocker.assignedTo = volunteer.ID;
+    }
+  }
+
+  volunteer.Notes = notes || volunteer.Notes;
+
+  saveState();
+  showToast(`${volunteer.Name} checked in successfully.`);
+  goHome();
+}
+
+function renderCheckOut() {
+  setBreadcrumb([
+    "Home",
+    "Check-out",
+    flow.step === 1 ? "Find Volunteer" : "Return Assets"
+  ]);
+
+  if (flow.step === 1) {
+    document.getElementById("main").innerHTML = `
+      <section class="fade-in max-w-3xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h2 class="text-xl font-bold">Find volunteer for check-out</h2>
+
+          <div class="mt-5 grid gap-4 sm:grid-cols-2">
+            <input id="scanId" placeholder="Scan or enter volunteer ID" />
+            <input id="searchName" list="volunteers" placeholder="Search volunteer name" />
+            <datalist id="volunteers">${volunteerOptions()}</datalist>
+          </div>
+
+          <div class="mt-6 flex justify-between">
+            <button onclick="goHome()" class="px-4 py-2 rounded-xl border border-slate-300">Back</button>
+            <button onclick="locateCheckOutVolunteer()" class="px-5 py-2 rounded-xl bg-sky-600 text-white font-semibold">Continue</button>
+          </div>
+        </div>
+      </section>
+    `;
+
+    return;
+  }
+
+  const volunteer = flow.volunteer;
+
+  const tshirtSection =
+    volunteer["T-Shirt Received"] === "Yes"
+      ? `
+        <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+          <input id="tshirtReturn" type="checkbox" class="h-5 w-5" />
+          <span><strong>T-shirt returned</strong> <span class="text-slate-500 text-xs">(optional)</span></span>
+        </label>
+      `
+      : "";
+
+  const cardSection =
+    volunteer["Access Card Number"] !== "—"
+      ? `
+        <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+          <input id="cardReturn" type="checkbox" checked class="h-5 w-5" />
+          <span><strong>Access card returned</strong> <span class="text-rose-600 text-xs">(required)</span></span>
+        </label>
+      `
+      : "";
+
+  const lockerSection =
+    volunteer["Locker Number"] !== "—"
+      ? `
+        <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+          <input id="lockerRelease" type="checkbox" checked class="h-5 w-5" />
+          <span><strong>Locker released</strong> <span class="text-rose-600 text-xs">(required)</span></span>
+        </label>
+      `
+      : "";
+
+  document.getElementById("main").innerHTML = `
+    <section class="fade-in max-w-4xl mx-auto">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <h2 class="text-xl font-bold">Return assets & complete shift</h2>
+
+        <div class="mt-4 rounded-xl bg-slate-50 p-4 text-sm">
+          <div><strong>Assignment:</strong> ${volunteer.Assignment}</div>
+          <div>
+            <strong>Expected:</strong>
+            ${volunteer["Expected Time In"]} – ${volunteer["Expected Time Out"]}
+          </div>
+          <div><strong>Actual time in:</strong> ${volunteer["Actual Time In"] || "—"}</div>
+        </div>
+
+        <div class="mt-5 space-y-3">
+          ${
+            volunteer["Lanyard Given"] === "Yes"
+              ? `
+                <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+                  <input id="lanyardReturn" type="checkbox" checked class="h-5 w-5" />
+                  <span><strong>Lanyard returned</strong> <span class="text-rose-600 text-xs">(required)</span></span>
+                </label>
+              `
+              : ""
+          }
+
+          ${tshirtSection}
+          ${cardSection}
+          ${lockerSection}
+
+          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+            <input id="gift" type="checkbox" checked class="h-5 w-5" />
+            <span><strong>Gift handed to volunteer</strong> <span class="text-rose-600 text-xs">(required)</span></span>
+          </label>
+
+          <textarea id="notes" rows="3" placeholder="Check-out notes">${volunteer.Notes || ""}</textarea>
+        </div>
+
+        <div class="mt-6 flex justify-between">
+          <button onclick="goToFlowStep(1)" class="px-4 py-2 rounded-xl border border-slate-300">Back</button>
+          <button onclick="completeCheckOut()" class="px-5 py-2 rounded-xl bg-emerald-600 text-white font-semibold">Complete check-out</button>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function locateCheckOutVolunteer() {
+  const id = document.getElementById("scanId").value;
+  const name = document.getElementById("searchName").value;
+
+  const volunteer = id ? findVolunteer(id) : findVolunteer(name);
+
+  if (!volunteer) {
+    showToast("Volunteer not found.", "error");
+    return;
+  }
+
+  if (volunteer.Status !== "Checked In") {
+    showToast(
+      `${volunteer.Name} cannot be checked out because they are not checked in.`,
+      "error"
+    );
+    return;
+  }
+
+  flow.volunteer = volunteer;
+  flow.step = 2;
+  render();
+}
+
+function completeCheckOut() {
+  const volunteer = flow.volunteer;
+
+  const lanyardReturn = document.getElementById("lanyardReturn")
+    ? document.getElementById("lanyardReturn").checked
+    : false;
+
+  const tshirtReturn = document.getElementById("tshirtReturn")
+    ? document.getElementById("tshirtReturn").checked
+    : false;
+
+  const cardReturn = document.getElementById("cardReturn")
+    ? document.getElementById("cardReturn").checked
+    : false;
+
+  const lockerRelease = document.getElementById("lockerRelease")
+    ? document.getElementById("lockerRelease").checked
+    : false;
+
+  const gift = document.getElementById("gift").checked;
+  const notes = document.getElementById("notes").value.trim();
+
+  if (volunteer["Lanyard Given"] === "Yes" && !lanyardReturn) {
+    return showToast("Lanyard must be returned.", "error");
+  }
+
+  if (volunteer["Access Card Number"] !== "—" && !cardReturn) {
+    return showToast("Access card must be returned.", "error");
+  }
+
+  if (volunteer["Locker Number"] !== "—" && !lockerRelease) {
+    return showToast("Locker must be released.", "error");
+  }
+
+  if (!gift) {
+    return showToast("Gift must be handed to the volunteer.", "error");
+  }
+
+  if (lanyardReturn) {
+    volunteer["Lanyard Returned"] = "Yes";
+    volunteer["Lanyard Given"] = "No";
+  }
+
+  if (tshirtReturn) {
+    volunteer["T-Shirt Returned"] = "Yes";
+    volunteer["T-Shirt Received"] = "No";
+
+    state.inventory.tshirts[volunteer["T-Shirt Size"]]++;
+  }
+
+  if (cardReturn) {
+    const card = state.inventory.accessCards.find(
+      item => item.number === volunteer["Access Card Number"]
+    );
+
+    if (card) {
+      card.status = "Available";
+      card.assignedTo = null;
+    }
+
+    volunteer["Access Card Returned"] = "Yes";
+    volunteer["Access Card Number"] = "—";
+  }
+
+  if (lockerRelease) {
+    const locker = state.inventory.lockers.find(
+      item => String(item.number) === String(volunteer["Locker Number"])
+    );
+
+    if (locker) {
+      locker.status = "Available";
+      locker.assignedTo = null;
+    }
+
+    volunteer["Locker Cleared"] = "Yes";
+    volunteer["Locker Number"] = "—";
+  }
+
+  volunteer["Gift Received"] = gift ? "Yes" : "No";
+  volunteer["Actual Time Out"] = nowTime();
+  volunteer.Status = "Checked Out";
+  volunteer.Notes = notes;
+
+  saveState();
+  showToast(`${volunteer.Name} checked out successfully.`);
+  goHome();
+}
+
+function renderDashboard() {
+  setBreadcrumb(["Home", "Dashboard"]);
+
+  const volunteers = state.volunteers;
+
+  const checkedIn = volunteers.filter(
+    volunteer => volunteer.Status === "Checked In"
+  ).length;
+
+  const scheduled = volunteers.filter(
+    volunteer => volunteer.Status === "Scheduled"
+  ).length;
+
+  const completed = volunteers.filter(
+    volunteer => volunteer.Status === "Checked Out"
+  ).length;
+
+  const assignments = [];
+  volunteers.forEach(volunteer => {
+    if (!assignments.includes(volunteer.Assignment)) {
+      assignments.push(volunteer.Assignment);
+    }
+  });
+
+  document.getElementById("main").innerHTML = `
+    <section class="fade-in">
+      <div class="grid gap-4 sm:grid-cols-4">
+        ${summaryCard("Total volunteers", volunteers.length, "text-sky-600")}
+        ${summaryCard("Checked-in volunteers", checkedIn, "text-emerald-600")}
+        ${summaryCard("Scheduled shifts", scheduled, "text-indigo-600")}
+        ${summaryCard("Completed shifts", completed, "text-slate-700")}
+      </div>
+
+      <div class="mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+        <div class="flex flex-wrap gap-3 items-end">
+          <input id="search" oninput="filterDashboard()" placeholder="Search names, assignments, cards, lockers, notes…" />
+
+          <select id="statusFilter" onchange="filterDashboard()">
+            <option value="">All statuses</option>
+            <option>Scheduled</option>
+            <option>Checked In</option>
+            <option>Checked Out</option>
+            <option>Absent</option>
+            <option>Cancelled</option>
+          </select>
+
+          <select id="assignmentFilter" onchange="filterDashboard()">
+            <option value="">All assignments</option>
+            ${assignments.map(assignment => `<option>${assignment}</option>`).join("")}
+          </select>
+
+          <label class="flex items-center gap-2 text-sm">
+            <input id="outstanding" type="checkbox" onchange="filterDashboard()" class="h-4 w-4" />
+            Outstanding assets
+          </label>
+
+          <button onclick="clearFilters()" class="px-4 py-2 rounded-xl border border-slate-300">Clear filters</button>
+          <button onclick="exportCSV()" class="px-4 py-2 rounded-xl bg-slate-800 text-white">Export CSV</button>
+
+          <label class="px-4 py-2 rounded-xl border border-slate-300 cursor-pointer">
+            Import CSV
+            <input type="file" accept=".csv" class="hidden" onchange="importCSV(event)" />
+          </label>
+        </div>
+
+        <div class="mt-5 overflow-x-auto">
+          <table>
+            <thead class="bg-slate-50 text-slate-600">
+              <tr>
+                <th onclick="sortByName()" class="cursor-pointer">Name</th>
+                <th>Assignment</th>
+                <th>Scheduled hours</th>
+                <th>Attendance</th>
+                <th>Status</th>
+                <th>Assets</th>
+                <th></th>
+              </tr>
+            </thead>
+
+            <tbody id="rosterBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  `;
+
+  filterDashboard();
+}
+
+function summaryCard(label, value, color) {
+  return `
+    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+      <div class="text-sm text-slate-500">${label}</div>
+      <div class="mt-2 text-3xl font-extrabold ${color}">${value}</div>
+    </div>
+  `;
+}
+
+function filterDashboard() {
+  const search = document.getElementById("search").value.toLowerCase();
+  const status = document.getElementById("statusFilter").value;
+  const assignment = document.getElementById("assignmentFilter").value;
+  const outstandingOnly = document.getElementById("outstanding").checked;
+
+  const rows = state.volunteers.filter(volunteer => {
+    const text = Object.values(volunteer).join(" ").toLowerCase();
+
+    const matchesSearch = !search || text.includes(search);
+    const matchesStatus = !status || volunteer.Status === status;
+    const matchesAssignment = !assignment || volunteer.Assignment === assignment;
+
+    const hasOutstandingAssets =
+      volunteer["Lanyard Returned"] === "No" ||
+      volunteer["T-Shirt Returned"] === "No" ||
+      volunteer["Access Card Returned"] === "No" ||
+      volunteer["Locker Cleared"] === "No";
+
+    const matchesOutstanding = !outstandingOnly || hasOutstandingAssets;
+
+    return matchesSearch && matchesStatus && matchesAssignment && matchesOutstanding;
+  });
+
+  document.getElementById("rosterBody").innerHTML = rows.length
+    ? rows
+        .map(
+          volunteer => `
+            <tr>
+              <td class="font-medium">${volunteer.Name}</td>
+              <td>${volunteer.Assignment}</td>
+
+              <td>
+                ${volunteer["Expected Time In"]}–${volunteer["Expected Time Out"]}
+              </td>
+
+              <td>
+                ${volunteer["Actual Time In"] || "—"} → ${volunteer["Actual Time Out"] || "—"}
+              </td>
+
+              <td>${volunteer.Status}</td>
+
+              <td class="text-xs">
+                ${volunteer["Lanyard Given"] === "Yes" ? "Lanyard " : ""}
+                ${volunteer["Name Tag Given"] === "Yes" ? "• Name tag " : ""}
+                ${volunteer["Meal Voucher Given"] === "Yes" ? "• Meal voucher " : ""}
+                ${volunteer["T-Shirt Received"] === "Yes" ? `• ${volunteer["T-Shirt Size"]} T-shirt ` : ""}
+                ${volunteer["Access Card Number"] !== "—" ? `• Card ${volunteer["Access Card Number"]} ` : ""}
+                ${volunteer["Locker Number"] !== "—" ? `• Locker ${volunteer["Locker Number"]} ` : ""}
+                ${volunteer["Gift Received"] === "Yes" ? "• Gift" : ""}
+              </td>
+
+              <td class="text-right">
+                <button onclick="openVolunteerDetails('${volunteer.ID}')" class="text-sky-600 hover:underline">Details</button>
+              </td>
+            </tr>
+          `
+        )
+        .join("")
+    : `
+      <tr>
+        <td colspan="7" class="text-center text-slate-500 py-8">
+          No volunteers match the current filters.
+        </td>
+      </tr>
+    `;
+}
+
+function clearFilters() {
+  document.getElementById("search").value = "";
+  document.getElementById("statusFilter").value = "";
+  document.getElementById("assignmentFilter").value = "";
+  document.getElementById("outstanding").checked = false;
+
+  filterDashboard();
+}
+
+function sortByName() {
+  state.volunteers.sort((first, second) => first.Name.localeCompare(second.Name));
+  saveState();
+  filterDashboard();
+}
+
+function openVolunteerDetails(id) {
+  const volunteer = state.volunteers.find(item => item.ID === id);
+  const modalRoot = document.getElementById("modalRoot");
+
+  modalRoot.innerHTML = `
+    <div class="absolute inset-0 bg-slate-900/50" onclick="closeModal()"></div>
+
+    <div class="relative z-10 min-h-full flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl fade-in">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          <h3 class="text-lg font-bold">Volunteer details — ${volunteer.Name}</h3>
+          <button onclick="closeModal()" class="text-2xl text-slate-400">&times;</button>
+        </div>
+
+        <div class="px-6 py-5 max-h-[70vh] overflow-y-auto">
+          <div class="grid sm:grid-cols-2 gap-4 text-sm">
+            <label>Name<input id="editName" value="${volunteer.Name}" /></label>
+            <label>Assignment<input id="editAssignment" value="${volunteer.Assignment}" /></label>
+
+            <label>Lanyard
+              <select id="editLanyard">
+                <option value="Yes" ${volunteer["Lanyard Given"] === "Yes" ? "selected" : ""}>Yes</option>
+                <option value="No" ${volunteer["Lanyard Given"] === "No" ? "selected" : ""}>No</option>
+              </select>
+            </label>
+
+            <label>Name tag
+              <select id="editNameTag">
+                <option value="Yes" ${volunteer["Name Tag Given"] === "Yes" ? "selected" : ""}>Yes</option>
+                <option value="No" ${volunteer["Name Tag Given"] === "No" ? "selected" : ""}>No</option>
+              </select>
+            </label>
+
+            <label>Meal voucher
+              <select id="editMealVoucher">
+                <option value="Yes" ${volunteer["Meal Voucher Given"] === "Yes" ? "selected" : ""}>Yes</option>
+                <option value="No" ${volunteer["Meal Voucher Given"] === "No" ? "selected" : ""}>No</option>
+              </select>
+            </label>
+
+            <label>T-shirt size<input id="editSize" value="${volunteer["T-Shirt Size"]}" /></label>
+
+            <label>T-shirt received
+              <select id="editTshirtReceived">
+                <option value="Yes" ${volunteer["T-Shirt Received"] === "Yes" ? "selected" : ""}>Yes</option>
+                <option value="No" ${volunteer["T-Shirt Received"] === "No" ? "selected" : ""}>No</option>
+              </select>
+            </label>
+
+            <label>T-shirt returned
+              <select id="editTshirtReturned">
+                <option value="Yes" ${volunteer["T-Shirt Returned"] === "Yes" ? "selected" : ""}>Yes</option>
+                <option value="No" ${volunteer["T-Shirt Returned"] === "No" ? "selected" : ""}>No</option>
+              </select>
+            </label>
+
+            <label>Access card<input id="editCard" value="${volunteer["Access Card Number"]}" /></label>
+            <label>Locker<input id="editLocker" value="${volunteer["Locker Number"]}" /></label>
+
+            <label>Gift received
+              <select id="editGift">
+                <option value="Yes" ${volunteer["Gift Received"] === "Yes" ? "selected" : ""}>Yes</option>
+                <option value="No" ${volunteer["Gift Received"] === "No" ? "selected" : ""}>No</option>
+              </select>
+            </label>
+
+            <label class="sm:col-span-2">Notes
+              <textarea id="editNotes" rows="3">${volunteer.Notes}</textarea>
+            </label>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-slate-200 flex justify-end">
+          <button onclick="saveVolunteerDetails('${volunteer.ID}')" class="px-5 py-2 rounded-xl bg-sky-600 text-white font-semibold">Save changes</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  modalRoot.classList.remove("hidden");
+}
+
+function closeModal() {
+  const modalRoot = document.getElementById("modalRoot");
+  modalRoot.classList.add("hidden");
+  modalRoot.innerHTML = "";
+}
+
+function saveVolunteerDetails(id) {
+  const volunteer = state.volunteers.find(item => item.ID === id);
+
+  volunteer.Name = document.getElementById("editName").value;
+  volunteer.Assignment = document.getElementById("editAssignment").value;
+  volunteer["Lanyard Given"] = document.getElementById("editLanyard").value;
+  volunteer["Name Tag Given"] = document.getElementById("editNameTag").value;
+  volunteer["Meal Voucher Given"] = document.getElementById("editMealVoucher").value;
+  volunteer["T-Shirt Size"] = document.getElementById("editSize").value;
+  volunteer["T-Shirt Received"] = document.getElementById("editTshirtReceived").value;
+  volunteer["T-Shirt Returned"] = document.getElementById("editTshirtReturned").value;
+  volunteer["Access Card Number"] = document.getElementById("editCard").value;
+  volunteer["Locker Number"] = document.getElementById("editLocker").value;
+  volunteer["Gift Received"] = document.getElementById("editGift").value;
+  volunteer.Notes = document.getElementById("editNotes").value;
+
+  saveState();
+  closeModal();
+  showToast("Volunteer details updated.");
+  filterDashboard();
+}
+
+function exportCSV() {
+  const headers = Object.keys(state.volunteers[0]);
+
+  const csv = [
+    headers.join(","),
+    ...state.volunteers.map(volunteer =>
+      headers
+        .map(
+          header =>
+            `"${String(volunteer[header] || "").replace(/"/g, '""')}"`
+        )
+        .join(",")
+    )
+  ].join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const link = document.createElement("a");
+
+  link.href = URL.createObjectURL(blob);
+  link.download = "volunteers.csv";
+  link.click();
+
+  showToast("CSV exported.");
+}
+
+function importCSV(event) {
+  const file = event.target.files[0];
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    state.volunteers = parseCSV(reader.result);
+    saveState();
+
+    showToast("CSV imported successfully.");
+    filterDashboard();
+  };
+
+  reader.readAsText(file);
+}
+
+function render() {
+  if (!flow) return renderHome();
+
+  if (flow.type === "checkin") return renderCheckIn();
+  if (flow.type === "checkout") return renderCheckOut();
+  if (flow.type === "dashboard") return renderDashboard();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  try {
+    state = loadState();
+    renderHome();
+  } catch (error) {
+    console.error(error);
+
+    document.getElementById("main").innerHTML = `
+      <div class="bg-white rounded-2xl p-6 border border-rose-200 text-rose-700">
+        <h2 class="font-bold text-lg">The Volunteer Desk could not start.</h2>
+        <p class="mt-2 text-sm">${error.message}</p>
+      </div>
+    `;
+  }
 });
-$('homeBtn').onclick=showHome;
-render();
 </script>
 </body>
 </html>
