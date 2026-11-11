@@ -8,42 +8,135 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    body { font-family: system-ui, sans-serif; }
+    :root {
+      color-scheme: light;
+    }
+
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
     .hidden { display: none !important; }
-    .fade-in { animation: fadeIn .2s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-    input, select, textarea { border: 1px solid #cbd5e1; border-radius: .75rem; padding: .55rem .75rem; width: 100%; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { padding: .75rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
-    button { cursor: pointer; }
+
+    .fade-in {
+      animation: fadeIn .22s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .field {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: .75rem;
+      padding: .875rem 1rem;
+      font-size: .95rem;
+      background-color: #fff;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .field:focus {
+      outline: none;
+      border-color: #0284c7;
+      box-shadow: 0 0 0 4px rgba(2, 132, 199, .12);
+    }
+
+    .field-label {
+      display: block;
+      margin-bottom: .5rem;
+      font-size: .8rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.25rem;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, .06);
+    }
+
+    .asset-option {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.15rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      background: #f8fafc;
+      transition: border-color .15s ease, background .15s ease;
+    }
+
+    .asset-option:hover {
+      border-color: #7dd3fc;
+      background: #f0f9ff;
+    }
+
+    .asset-option input {
+      width: 1.25rem;
+      height: 1.25rem;
+      accent-color: #0284c7;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: .9rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+
+    thead th {
+      background: #f8fafc;
+      font-size: .72rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    button {
+      cursor: pointer;
+    }
   </style>
 </head>
 
-<body class="bg-slate-100 text-slate-800">
+<body class="min-h-screen bg-slate-100 text-slate-800">
   <header class="bg-white border-b border-slate-200 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="h-10 w-10 rounded-xl bg-sky-600 text-white grid place-items-center font-bold">VD</div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-8 py-5 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="h-12 w-12 rounded-2xl bg-sky-600 text-white grid place-items-center font-extrabold text-lg shadow-sm">VD</div>
 
         <div>
-          <h1 class="text-lg sm:text-xl font-bold text-slate-900">Science Centre Volunteer Desk</h1>
-          <p class="text-xs sm:text-sm text-slate-500">Check-in, check-out, assets, and roster management</p>
+          <h1 class="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight">
+            Science Centre Volunteer Desk
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-500">
+            Check-in, check-out, asset tracking, and roster management
+          </p>
         </div>
       </div>
 
-      <nav id="breadcrumb" class="flex flex-wrap items-center gap-1 text-sm"></nav>
+      <nav id="breadcrumb" class="flex flex-wrap items-center gap-1 text-sm" aria-label="Breadcrumb"></nav>
     </div>
   </header>
 
-  <main id="main" class="max-w-7xl mx-auto px-4 sm:px-6 py-6"></main>
+  <main id="main" class="max-w-7xl mx-auto px-4 sm:px-8 py-8"></main>
 
-  <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-xl text-white shadow-lg"></div>
+  <div id="toast" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-5 py-3.5 rounded-2xl text-white shadow-xl"></div>
   <div id="modalRoot" class="hidden fixed inset-0 z-40"></div>
 
 <script>
 "use strict";
 
-const STORE_KEY = "scienceCentreVolunteerDesk.v5";
+const STORE_KEY = "scienceCentreVolunteerDesk.v6";
 
 const TSHIRT_INVENTORY = {
   XS: 10,
@@ -133,7 +226,7 @@ function loadState() {
       return saved;
     }
   } catch (error) {
-    console.warn("Could not load saved data.", error);
+    console.warn("Could not load saved Volunteer Desk data.", error);
   }
 
   return createDefaultState();
@@ -158,11 +251,11 @@ function showToast(message, type = "success") {
     info: "bg-slate-800"
   };
 
-  toast.className = `fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-xl text-white shadow-lg ${colors[type]}`;
+  toast.className = `fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-5 py-3.5 rounded-2xl text-white shadow-xl ${colors[type]}`;
   toast.textContent = message;
   toast.classList.remove("hidden");
 
-  setTimeout(() => toast.classList.add("hidden"), 3200);
+  setTimeout(() => toast.classList.add("hidden"), 3500);
 }
 
 function setBreadcrumb(steps) {
@@ -185,11 +278,12 @@ function setBreadcrumb(steps) {
       return `
         <button
           onclick="${action}"
-          class="px-2 py-1 rounded-lg ${
+          class="px-3 py-2 rounded-xl font-medium transition ${
             isLast
-              ? "text-slate-900 font-semibold bg-slate-100"
-              : "text-sky-700 hover:bg-sky-50"
+              ? "text-slate-900 bg-slate-100"
+              : "text-sky-700 hover:bg-sky-50 hover:text-sky-800"
           }"
+          ${isLast ? 'aria-current="page"' : ""}
         >
           ${step}
         </button>
@@ -257,27 +351,33 @@ function renderHome() {
 
   document.getElementById("main").innerHTML = `
     <section class="fade-in">
-      <div class="rounded-3xl bg-gradient-to-br from-sky-600 to-indigo-700 text-white p-8 sm:p-12 shadow-xl">
-        <h2 class="text-2xl sm:text-4xl font-extrabold">Welcome to Volunteer Desk</h2>
+      <div class="rounded-3xl bg-gradient-to-br from-sky-700 via-sky-600 to-indigo-700 text-white p-8 sm:p-14 shadow-xl">
+        <span class="inline-flex items-center px-3 py-1 rounded-full bg-white/15 text-xs font-semibold uppercase tracking-wide">
+          Volunteer operations
+        </span>
 
-        <p class="mt-3 text-sky-100 max-w-2xl">
-          Manage volunteer arrivals, departures, shift assignments, and physical assets in one streamlined workflow.
+        <h2 class="mt-5 text-3xl sm:text-5xl font-extrabold leading-tight">
+          Welcome to Volunteer Desk
+        </h2>
+
+        <p class="mt-4 text-sky-100 max-w-2xl text-lg">
+          Manage volunteer arrivals, departures, shift assignments, and physical assets in one clear, streamlined workflow.
         </p>
 
-        <div class="mt-8 grid gap-4 sm:grid-cols-3">
-          <button onclick="startFlow('checkin')" class="bg-white text-sky-700 hover:bg-sky-50 rounded-2xl p-6 text-left shadow-lg">
-            <div class="text-lg font-bold">Check-in</div>
-            <div class="mt-1 text-sm opacity-80">Register arrival and issue assets</div>
+        <div class="mt-10 grid gap-5 sm:grid-cols-3">
+          <button onclick="startFlow('checkin')" class="bg-white text-sky-800 hover:bg-sky-50 rounded-3xl p-7 text-left shadow-lg transition">
+            <div class="text-xl font-extrabold">Check-in</div>
+            <p class="mt-2 text-sm text-slate-600">Register arrival and issue volunteer assets.</p>
           </button>
 
-          <button onclick="startFlow('checkout')" class="bg-white text-indigo-700 hover:bg-indigo-50 rounded-2xl p-6 text-left shadow-lg">
-            <div class="text-lg font-bold">Check-out</div>
-            <div class="mt-1 text-sm opacity-80">Return assets and complete shift</div>
+          <button onclick="startFlow('checkout')" class="bg-white text-indigo-800 hover:bg-indigo-50 rounded-3xl p-7 text-left shadow-lg transition">
+            <div class="text-xl font-extrabold">Check-out</div>
+            <p class="mt-2 text-sm text-slate-600">Return assets, issue gifts, and complete shifts.</p>
           </button>
 
-          <button onclick="startFlow('dashboard')" class="bg-white/10 text-white hover:bg-white/20 border border-white/30 rounded-2xl p-6 text-left shadow-lg">
-            <div class="text-lg font-bold">Dashboard</div>
-            <div class="mt-1 text-sm opacity-80">Review roster and inventory</div>
+          <button onclick="startFlow('dashboard')" class="bg-white/10 text-white hover:bg-white/20 border border-white/30 rounded-3xl p-7 text-left shadow-lg transition">
+            <div class="text-xl font-extrabold">Dashboard</div>
+            <p class="mt-2 text-sm text-sky-100">Review roster, attendance, assets, and inventory.</p>
           </button>
         </div>
       </div>
@@ -297,26 +397,31 @@ function renderCheckIn() {
   if (flow.step === 1) {
     document.getElementById("main").innerHTML = `
       <section class="fade-in max-w-3xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <h2 class="text-xl font-bold text-slate-900">Find volunteer</h2>
-          <p class="text-sm text-slate-500 mt-1">Scan the volunteer QR/ID or search by name.</p>
+        <div class="card p-7 sm:p-9">
+          <h2 class="text-2xl font-extrabold text-slate-900">Find volunteer</h2>
+          <p class="mt-2 text-slate-500">Scan the volunteer QR/ID or search by name to begin check-in.</p>
 
-          <div class="mt-5 grid gap-4 sm:grid-cols-2">
+          <div class="mt-8 grid gap-6 sm:grid-cols-2">
             <div>
-              <label class="text-sm font-medium">Scan or enter ID</label>
-              <input id="scanId" placeholder="e.g. 1" />
+              <label class="field-label" for="scanId">Scan or enter ID</label>
+              <input id="scanId" class="field" placeholder="Enter volunteer ID" />
             </div>
 
             <div>
-              <label class="text-sm font-medium">Or search name</label>
-              <input id="searchName" list="volunteers" placeholder="Start typing a name" />
+              <label class="field-label" for="searchName">Or search name</label>
+              <input id="searchName" list="volunteers" class="field" placeholder="Start typing a name" />
               <datalist id="volunteers">${volunteerOptions()}</datalist>
             </div>
           </div>
 
-          <div class="mt-6 flex justify-between">
-            <button onclick="goHome()" class="px-4 py-2 rounded-xl border border-slate-300">Back</button>
-            <button onclick="locateCheckInVolunteer()" class="px-5 py-2 rounded-xl bg-sky-600 text-white font-semibold">Continue</button>
+          <div class="mt-9 flex flex-wrap justify-between gap-3">
+            <button onclick="goHome()" class="px-6 py-3 rounded-xl border border-slate-300 font-semibold hover:bg-slate-50">
+              Back to Home
+            </button>
+
+            <button onclick="locateCheckInVolunteer()" class="px-7 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold shadow-sm">
+              Continue
+            </button>
           </div>
         </div>
       </section>
@@ -330,35 +435,40 @@ function renderCheckIn() {
 
     document.getElementById("main").innerHTML = `
       <section class="fade-in max-w-3xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="card p-7 sm:p-9">
+          <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h2 class="text-xl font-bold">${volunteer.Name}</h2>
-              <p class="text-sm text-slate-500">Volunteer ID ${volunteer.ID}</p>
+              <h2 class="text-2xl font-extrabold text-slate-900">${volunteer.Name}</h2>
+              <p class="mt-1 text-slate-500">Volunteer ID ${volunteer.ID}</p>
             </div>
 
-            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-sky-100 text-sky-700">
+            <span class="px-4 py-2 rounded-full text-xs font-bold bg-sky-100 text-sky-700">
               ${volunteer.Status}
             </span>
           </div>
 
-          <div class="mt-5 grid sm:grid-cols-2 gap-4">
-            <div class="rounded-xl bg-slate-50 p-4">
-              <div class="text-xs text-slate-500">Shift assignment</div>
-              <div class="font-semibold">${volunteer.Assignment}</div>
+          <div class="mt-8 grid gap-5 sm:grid-cols-2">
+            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-6">
+              <div class="field-label">Shift assignment</div>
+              <div class="text-lg font-bold text-slate-900">${volunteer.Assignment}</div>
             </div>
 
-            <div class="rounded-xl bg-slate-50 p-4">
-              <div class="text-xs text-slate-500">Expected time in / out</div>
-              <div class="font-semibold">
+            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-6">
+              <div class="field-label">Expected time in / out</div>
+              <div class="text-lg font-bold text-slate-900">
                 ${volunteer["Expected Time In"]} – ${volunteer["Expected Time Out"]}
               </div>
             </div>
           </div>
 
-          <div class="mt-6 flex justify-between">
-            <button onclick="goToFlowStep(1)" class="px-4 py-2 rounded-xl border border-slate-300">Back</button>
-            <button onclick="confirmCheckIn()" class="px-5 py-2 rounded-xl bg-emerald-600 text-white font-semibold">Check in volunteer</button>
+          <div class="mt-9 flex flex-wrap justify-between gap-3">
+            <button onclick="goToFlowStep(1)" class="px-6 py-3 rounded-xl border border-slate-300 font-semibold hover:bg-slate-50">
+              Back
+            </button>
+
+            <button onclick="confirmCheckIn()" class="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm">
+              Check in volunteer
+            </button>
           </div>
         </div>
       </section>
@@ -387,70 +497,107 @@ function renderCheckIn() {
 
   document.getElementById("main").innerHTML = `
     <section class="fade-in max-w-4xl mx-auto">
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <h2 class="text-xl font-bold">Asset management</h2>
-        <p class="text-sm text-slate-500">Issue required and optional items to ${volunteer.Name}.</p>
+      <div class="card p-7 sm:p-9">
+        <h2 class="text-2xl font-extrabold text-slate-900">Asset management</h2>
+        <p class="mt-2 text-slate-500">Issue required and optional items to ${volunteer.Name}.</p>
 
-        <div class="mt-5 space-y-3">
-          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
-            <input id="lanyard" type="checkbox" checked class="h-5 w-5" />
-            <span><strong>Lanyard given</strong> <span class="text-rose-600 text-xs">(required)</span></span>
-          </label>
+        <div class="mt-8 space-y-5">
+          <div class="asset-option">
+            <input id="lanyard" type="checkbox" checked />
+            <div>
+              <div class="font-bold text-slate-900">Lanyard</div>
+              <div class="text-sm text-slate-500">Required for all checked-in volunteers.</div>
+            </div>
+          </div>
 
-          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
-            <input id="nameTag" type="checkbox" checked class="h-5 w-5" />
-            <span><strong>Name tag given</strong> <span class="text-rose-600 text-xs">(required)</span></span>
-          </label>
+          <div class="asset-option">
+            <input id="nameTag" type="checkbox" checked />
+            <div>
+              <div class="font-bold text-slate-900">Name tag</div>
+              <div class="text-sm text-slate-500">Required for volunteer identification.</div>
+            </div>
+          </div>
 
-          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
-            <input id="mealVoucher" type="checkbox" checked class="h-5 w-5" />
-            <span><strong>Meal voucher given</strong> <span class="text-rose-600 text-xs">(required)</span></span>
-          </label>
+          <div class="asset-option">
+            <input id="mealVoucher" type="checkbox" checked />
+            <div>
+              <div class="font-bold text-slate-900">Meal voucher</div>
+              <div class="text-sm text-slate-500">Required meal support for the shift.</div>
+            </div>
+          </div>
 
-          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
-            <input id="tshirt" type="checkbox" checked class="h-5 w-5" />
-            <span><strong>T-shirt given</strong> <span class="text-rose-600 text-xs">(required)</span></span>
-          </label>
-
-          <select id="tshirtSize">
-            <option value="">Select T-shirt size</option>
-            ${availableTshirts}
-          </select>
-
-          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
-            <input id="accessCard" type="checkbox" class="h-5 w-5" />
-            <span><strong>Access card given</strong> <span class="text-slate-500 text-xs">(optional)</span></span>
-          </label>
-
-          <select id="accessCardNumber">
-            <option value="">Select access card</option>
-            ${availableCards}
-          </select>
-
-          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
-            <input id="locker" type="checkbox" class="h-5 w-5" />
-            <span><strong>Locker assigned</strong> <span class="text-slate-500 text-xs">(optional)</span></span>
-          </label>
-
-          <select id="lockerPreference" onchange="updateLockerOptions()">
-            <option value="">Select locker preference</option>
-            <option value="Top">Top locker</option>
-            <option value="Bottom">Bottom locker</option>
-          </select>
-
-          <select id="lockerNumber">
-            <option value="">Select available locker</option>
-          </select>
+          <div class="asset-option">
+            <input id="tshirt" type="checkbox" checked />
+            <div>
+              <div class="font-bold text-slate-900">T-shirt</div>
+              <div class="text-sm text-slate-500">Required; select an available size.</div>
+            </div>
+          </div>
 
           <div>
-            <label class="text-sm font-medium">Notes</label>
-            <textarea id="notes" rows="3" placeholder="Handover notes or special instructions"></textarea>
+            <label class="field-label" for="tshirtSize">T-shirt size</label>
+            <select id="tshirtSize" class="field">
+              <option value="">Select T-shirt size</option>
+              ${availableTshirts}
+            </select>
+          </div>
+
+          <div class="asset-option">
+            <input id="accessCard" type="checkbox" />
+            <div>
+              <div class="font-bold text-slate-900">Access card</div>
+              <div class="text-sm text-slate-500">Optional. Must be returned at check-out.</div>
+            </div>
+          </div>
+
+          <div>
+            <label class="field-label" for="accessCardNumber">Access card number</label>
+            <select id="accessCardNumber" class="field">
+              <option value="">Select available access card</option>
+              ${availableCards}
+            </select>
+          </div>
+
+          <div class="asset-option">
+            <input id="locker" type="checkbox" />
+            <div>
+              <div class="font-bold text-slate-900">Locker</div>
+              <div class="text-sm text-slate-500">Optional. Must be released at check-out.</div>
+            </div>
+          </div>
+
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label class="field-label" for="lockerPreference">Locker preference</label>
+              <select id="lockerPreference" class="field" onchange="updateLockerOptions()">
+                <option value="">Select preference</option>
+                <option value="Top">Top locker</option>
+                <option value="Bottom">Bottom locker</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="field-label" for="lockerNumber">Available locker</label>
+              <select id="lockerNumber" class="field">
+                <option value="">Select available locker</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="field-label" for="notes">Notes</label>
+            <textarea id="notes" rows="4" class="field" placeholder="Add handover notes or special instructions"></textarea>
           </div>
         </div>
 
-        <div class="mt-6 flex justify-between">
-          <button onclick="goToFlowStep(2)" class="px-4 py-2 rounded-xl border border-slate-300">Back</button>
-          <button onclick="completeCheckIn()" class="px-5 py-2 rounded-xl bg-emerald-600 text-white font-semibold">Complete check-in</button>
+        <div class="mt-9 flex flex-wrap justify-between gap-3">
+          <button onclick="goToFlowStep(2)" class="px-6 py-3 rounded-xl border border-slate-300 font-semibold hover:bg-slate-50">
+            Back
+          </button>
+
+          <button onclick="completeCheckIn()" class="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm">
+            Complete check-in
+          </button>
         </div>
       </div>
     </section>
@@ -544,7 +691,9 @@ function completeCheckIn() {
   volunteer["Access Card Returned"] = "No";
 
   if (accessCard) {
-    const card = state.inventory.accessCards.find(item => item.number === accessCardNumber);
+    const card = state.inventory.accessCards.find(
+      item => item.number === accessCardNumber
+    );
 
     if (card) {
       card.status = "Assigned";
@@ -583,18 +732,31 @@ function renderCheckOut() {
   if (flow.step === 1) {
     document.getElementById("main").innerHTML = `
       <section class="fade-in max-w-3xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <h2 class="text-xl font-bold">Find volunteer for check-out</h2>
+        <div class="card p-7 sm:p-9">
+          <h2 class="text-2xl font-extrabold text-slate-900">Find volunteer for check-out</h2>
+          <p class="mt-2 text-slate-500">Search by volunteer ID or name. Only checked-in volunteers can be checked out.</p>
 
-          <div class="mt-5 grid gap-4 sm:grid-cols-2">
-            <input id="scanId" placeholder="Scan or enter volunteer ID" />
-            <input id="searchName" list="volunteers" placeholder="Search volunteer name" />
-            <datalist id="volunteers">${volunteerOptions()}</datalist>
+          <div class="mt-8 grid gap-6 sm:grid-cols-2">
+            <div>
+              <label class="field-label" for="scanId">Scan or enter ID</label>
+              <input id="scanId" class="field" placeholder="Enter volunteer ID" />
+            </div>
+
+            <div>
+              <label class="field-label" for="searchName">Or search name</label>
+              <input id="searchName" list="volunteers" class="field" placeholder="Start typing a name" />
+              <datalist id="volunteers">${volunteerOptions()}</datalist>
+            </div>
           </div>
 
-          <div class="mt-6 flex justify-between">
-            <button onclick="goHome()" class="px-4 py-2 rounded-xl border border-slate-300">Back</button>
-            <button onclick="locateCheckOutVolunteer()" class="px-5 py-2 rounded-xl bg-sky-600 text-white font-semibold">Continue</button>
+          <div class="mt-9 flex flex-wrap justify-between gap-3">
+            <button onclick="goHome()" class="px-6 py-3 rounded-xl border border-slate-300 font-semibold hover:bg-slate-50">
+              Back to Home
+            </button>
+
+            <button onclick="locateCheckOutVolunteer()" class="px-7 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold shadow-sm">
+              Continue
+            </button>
           </div>
         </div>
       </section>
@@ -608,55 +770,79 @@ function renderCheckOut() {
   const tshirtSection =
     volunteer["T-Shirt Received"] === "Yes"
       ? `
-        <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
-          <input id="tshirtReturn" type="checkbox" class="h-5 w-5" />
-          <span><strong>T-shirt returned</strong> <span class="text-slate-500 text-xs">(optional)</span></span>
-        </label>
+        <div class="asset-option">
+          <input id="tshirtReturn" type="checkbox" />
+          <div>
+            <div class="font-bold text-slate-900">T-shirt returned</div>
+            <div class="text-sm text-slate-500">Optional. Returned inventory will be updated.</div>
+          </div>
+        </div>
       `
       : "";
 
   const cardSection =
     volunteer["Access Card Number"] !== "—"
       ? `
-        <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
-          <input id="cardReturn" type="checkbox" checked class="h-5 w-5" />
-          <span><strong>Access card returned</strong> <span class="text-rose-600 text-xs">(required)</span></span>
-        </label>
+        <div class="asset-option">
+          <input id="cardReturn" type="checkbox" checked />
+          <div>
+            <div class="font-bold text-slate-900">Access card returned</div>
+            <div class="text-sm text-slate-500">Required. Card ${volunteer["Access Card Number"]} will return to inventory.</div>
+          </div>
+        </div>
       `
       : "";
 
   const lockerSection =
     volunteer["Locker Number"] !== "—"
       ? `
-        <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
-          <input id="lockerRelease" type="checkbox" checked class="h-5 w-5" />
-          <span><strong>Locker released</strong> <span class="text-rose-600 text-xs">(required)</span></span>
-        </label>
+        <div class="asset-option">
+          <input id="lockerRelease" type="checkbox" checked />
+          <div>
+            <div class="font-bold text-slate-900">Locker released</div>
+            <div class="text-sm text-slate-500">Required. Locker ${volunteer["Locker Number"]} will return to inventory.</div>
+          </div>
+        </div>
       `
       : "";
 
   document.getElementById("main").innerHTML = `
     <section class="fade-in max-w-4xl mx-auto">
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <h2 class="text-xl font-bold">Return assets & complete shift</h2>
+      <div class="card p-7 sm:p-9">
+        <h2 class="text-2xl font-extrabold text-slate-900">Return assets & complete shift</h2>
 
-        <div class="mt-4 rounded-xl bg-slate-50 p-4 text-sm">
-          <div><strong>Assignment:</strong> ${volunteer.Assignment}</div>
-          <div>
-            <strong>Expected:</strong>
-            ${volunteer["Expected Time In"]} – ${volunteer["Expected Time Out"]}
+        <div class="mt-6 rounded-2xl bg-slate-50 border border-slate-200 p-6">
+          <div class="grid gap-4 sm:grid-cols-3">
+            <div>
+              <div class="field-label">Assignment</div>
+              <div class="font-bold">${volunteer.Assignment}</div>
+            </div>
+
+            <div>
+              <div class="field-label">Expected time</div>
+              <div class="font-bold">
+                ${volunteer["Expected Time In"]} – ${volunteer["Expected Time Out"]}
+              </div>
+            </div>
+
+            <div>
+              <div class="field-label">Actual time in</div>
+              <div class="font-bold">${volunteer["Actual Time In"] || "—"}</div>
+            </div>
           </div>
-          <div><strong>Actual time in:</strong> ${volunteer["Actual Time In"] || "—"}</div>
         </div>
 
-        <div class="mt-5 space-y-3">
+        <div class="mt-8 space-y-5">
           ${
             volunteer["Lanyard Given"] === "Yes"
               ? `
-                <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
-                  <input id="lanyardReturn" type="checkbox" checked class="h-5 w-5" />
-                  <span><strong>Lanyard returned</strong> <span class="text-rose-600 text-xs">(required)</span></span>
-                </label>
+                <div class="asset-option">
+                  <input id="lanyardReturn" type="checkbox" checked />
+                  <div>
+                    <div class="font-bold text-slate-900">Lanyard returned</div>
+                    <div class="text-sm text-slate-500">Required before check-out can be completed.</div>
+                  </div>
+                </div>
               `
               : ""
           }
@@ -665,17 +851,28 @@ function renderCheckOut() {
           ${cardSection}
           ${lockerSection}
 
-          <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
-            <input id="gift" type="checkbox" checked class="h-5 w-5" />
-            <span><strong>Gift handed to volunteer</strong> <span class="text-rose-600 text-xs">(required)</span></span>
-          </label>
+          <div class="asset-option">
+            <input id="gift" type="checkbox" checked />
+            <div>
+              <div class="font-bold text-slate-900">Gift handed to volunteer</div>
+              <div class="text-sm text-slate-500">Required to complete check-out.</div>
+            </div>
+          </div>
 
-          <textarea id="notes" rows="3" placeholder="Check-out notes">${volunteer.Notes || ""}</textarea>
+          <div>
+            <label class="field-label" for="notes">Check-out notes</label>
+            <textarea id="notes" rows="4" class="field" placeholder="Add final notes or handover details">${volunteer.Notes || ""}</textarea>
+          </div>
         </div>
 
-        <div class="mt-6 flex justify-between">
-          <button onclick="goToFlowStep(1)" class="px-4 py-2 rounded-xl border border-slate-300">Back</button>
-          <button onclick="completeCheckOut()" class="px-5 py-2 rounded-xl bg-emerald-600 text-white font-semibold">Complete check-out</button>
+        <div class="mt-9 flex flex-wrap justify-between gap-3">
+          <button onclick="goToFlowStep(1)" class="px-6 py-3 rounded-xl border border-slate-300 font-semibold hover:bg-slate-50">
+            Back
+          </button>
+
+          <button onclick="completeCheckOut()" class="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm">
+            Complete check-out
+          </button>
         </div>
       </div>
     </section>
@@ -729,15 +926,15 @@ function completeCheckOut() {
   const notes = document.getElementById("notes").value.trim();
 
   if (volunteer["Lanyard Given"] === "Yes" && !lanyardReturn) {
-    return showToast("Lanyard must be returned.", "error");
+    return showToast("Lanyard must be returned before check-out.", "error");
   }
 
   if (volunteer["Access Card Number"] !== "—" && !cardReturn) {
-    return showToast("Access card must be returned.", "error");
+    return showToast("Access card must be returned before check-out.", "error");
   }
 
   if (volunteer["Locker Number"] !== "—" && !lockerRelease) {
-    return showToast("Locker must be released.", "error");
+    return showToast("Locker must be released before check-out.", "error");
   }
 
   if (!gift) {
@@ -820,48 +1017,64 @@ function renderDashboard() {
 
   document.getElementById("main").innerHTML = `
     <section class="fade-in">
-      <div class="grid gap-4 sm:grid-cols-4">
+      <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         ${summaryCard("Total volunteers", volunteers.length, "text-sky-600")}
         ${summaryCard("Checked-in volunteers", checkedIn, "text-emerald-600")}
         ${summaryCard("Scheduled shifts", scheduled, "text-indigo-600")}
         ${summaryCard("Completed shifts", completed, "text-slate-700")}
       </div>
 
-      <div class="mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-        <div class="flex flex-wrap gap-3 items-end">
-          <input id="search" oninput="filterDashboard()" placeholder="Search names, assignments, cards, lockers, notes…" />
+      <div class="card mt-7 p-6 sm:p-8">
+        <div class="flex flex-wrap gap-4 items-end">
+          <div class="flex-1 min-w-[260px]">
+            <label class="field-label" for="search">Search roster</label>
+            <input id="search" class="field" oninput="filterDashboard()" placeholder="Search names, assignments, cards, lockers, notes…" />
+          </div>
 
-          <select id="statusFilter" onchange="filterDashboard()">
-            <option value="">All statuses</option>
-            <option>Scheduled</option>
-            <option>Checked In</option>
-            <option>Checked Out</option>
-            <option>Absent</option>
-            <option>Cancelled</option>
-          </select>
+          <div class="min-w-[180px]">
+            <label class="field-label" for="statusFilter">Status</label>
+            <select id="statusFilter" class="field" onchange="filterDashboard()">
+              <option value="">All statuses</option>
+              <option>Scheduled</option>
+              <option>Checked In</option>
+              <option>Checked Out</option>
+              <option>Absent</option>
+              <option>Cancelled</option>
+            </select>
+          </div>
 
-          <select id="assignmentFilter" onchange="filterDashboard()">
-            <option value="">All assignments</option>
-            ${assignments.map(assignment => `<option>${assignment}</option>`).join("")}
-          </select>
+          <div class="min-w-[200px]">
+            <label class="field-label" for="assignmentFilter">Assignment</label>
+            <select id="assignmentFilter" class="field" onchange="filterDashboard()">
+              <option value="">All assignments</option>
+              ${assignments.map(assignment => `<option>${assignment}</option>`).join("")}
+            </select>
+          </div>
 
-          <label class="flex items-center gap-2 text-sm">
-            <input id="outstanding" type="checkbox" onchange="filterDashboard()" class="h-4 w-4" />
+          <label class="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium">
+            <input id="outstanding" type="checkbox" onchange="filterDashboard()" class="h-5 w-5" />
             Outstanding assets
           </label>
+        </div>
 
-          <button onclick="clearFilters()" class="px-4 py-2 rounded-xl border border-slate-300">Clear filters</button>
-          <button onclick="exportCSV()" class="px-4 py-2 rounded-xl bg-slate-800 text-white">Export CSV</button>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <button onclick="clearFilters()" class="px-5 py-3 rounded-xl border border-slate-300 font-semibold hover:bg-slate-50">
+            Clear filters
+          </button>
 
-          <label class="px-4 py-2 rounded-xl border border-slate-300 cursor-pointer">
+          <button onclick="exportCSV()" class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold">
+            Export CSV
+          </button>
+
+          <label class="px-5 py-3 rounded-xl border border-slate-300 font-semibold cursor-pointer hover:bg-slate-50">
             Import CSV
             <input type="file" accept=".csv" class="hidden" onchange="importCSV(event)" />
           </label>
         </div>
 
-        <div class="mt-5 overflow-x-auto">
+        <div class="mt-7 overflow-x-auto rounded-2xl border border-slate-200">
           <table>
-            <thead class="bg-slate-50 text-slate-600">
+            <thead>
               <tr>
                 <th onclick="sortByName()" class="cursor-pointer">Name</th>
                 <th>Assignment</th>
@@ -885,9 +1098,9 @@ function renderDashboard() {
 
 function summaryCard(label, value, color) {
   return `
-    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-      <div class="text-sm text-slate-500">${label}</div>
-      <div class="mt-2 text-3xl font-extrabold ${color}">${value}</div>
+    <div class="card p-7">
+      <div class="field-label">${label}</div>
+      <div class="mt-3 text-4xl font-extrabold ${color}">${value}</div>
     </div>
   `;
 }
@@ -921,7 +1134,7 @@ function filterDashboard() {
         .map(
           volunteer => `
             <tr>
-              <td class="font-medium">${volunteer.Name}</td>
+              <td class="font-bold text-slate-900">${volunteer.Name}</td>
               <td>${volunteer.Assignment}</td>
 
               <td>
@@ -932,9 +1145,13 @@ function filterDashboard() {
                 ${volunteer["Actual Time In"] || "—"} → ${volunteer["Actual Time Out"] || "—"}
               </td>
 
-              <td>${volunteer.Status}</td>
+              <td>
+                <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
+                  ${volunteer.Status}
+                </span>
+              </td>
 
-              <td class="text-xs">
+              <td class="text-xs leading-relaxed">
                 ${volunteer["Lanyard Given"] === "Yes" ? "Lanyard " : ""}
                 ${volunteer["Name Tag Given"] === "Yes" ? "• Name tag " : ""}
                 ${volunteer["Meal Voucher Given"] === "Yes" ? "• Meal voucher " : ""}
@@ -945,7 +1162,9 @@ function filterDashboard() {
               </td>
 
               <td class="text-right">
-                <button onclick="openVolunteerDetails('${volunteer.ID}')" class="text-sky-600 hover:underline">Details</button>
+                <button onclick="openVolunteerDetails('${volunteer.ID}')" class="text-sky-700 font-semibold hover:underline">
+                  Details
+                </button>
               </td>
             </tr>
           `
@@ -953,7 +1172,7 @@ function filterDashboard() {
         .join("")
     : `
       <tr>
-        <td colspan="7" class="text-center text-slate-500 py-8">
+        <td colspan="7" class="text-center text-slate-500 py-10">
           No volunteers match the current filters.
         </td>
       </tr>
@@ -980,75 +1199,101 @@ function openVolunteerDetails(id) {
   const modalRoot = document.getElementById("modalRoot");
 
   modalRoot.innerHTML = `
-    <div class="absolute inset-0 bg-slate-900/50" onclick="closeModal()"></div>
+    <div class="absolute inset-0 bg-slate-900/60" onclick="closeModal()"></div>
 
     <div class="relative z-10 min-h-full flex items-center justify-center p-4">
-      <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl fade-in">
-        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-          <h3 class="text-lg font-bold">Volunteer details — ${volunteer.Name}</h3>
-          <button onclick="closeModal()" class="text-2xl text-slate-400">&times;</button>
+      <div class="card w-full max-w-3xl fade-in">
+        <div class="px-7 py-5 border-b border-slate-200 flex items-center justify-between">
+          <h3 class="text-xl font-extrabold text-slate-900">Volunteer details — ${volunteer.Name}</h3>
+          <button onclick="closeModal()" class="text-3xl text-slate-400 hover:text-slate-700">&times;</button>
         </div>
 
-        <div class="px-6 py-5 max-h-[70vh] overflow-y-auto">
-          <div class="grid sm:grid-cols-2 gap-4 text-sm">
-            <label>Name<input id="editName" value="${volunteer.Name}" /></label>
-            <label>Assignment<input id="editAssignment" value="${volunteer.Assignment}" /></label>
+        <div class="px-7 py-7 max-h-[70vh] overflow-y-auto">
+          <div class="grid sm:grid-cols-2 gap-6">
+            <div>
+              <label class="field-label" for="editName">Name</label>
+              <input id="editName" class="field" value="${volunteer.Name}" />
+            </div>
 
-            <label>Lanyard
-              <select id="editLanyard">
+            <div>
+              <label class="field-label" for="editAssignment">Assignment</label>
+              <input id="editAssignment" class="field" value="${volunteer.Assignment}" />
+            </div>
+
+            <div>
+              <label class="field-label" for="editLanyard">Lanyard</label>
+              <select id="editLanyard" class="field">
                 <option value="Yes" ${volunteer["Lanyard Given"] === "Yes" ? "selected" : ""}>Yes</option>
                 <option value="No" ${volunteer["Lanyard Given"] === "No" ? "selected" : ""}>No</option>
               </select>
-            </label>
+            </div>
 
-            <label>Name tag
-              <select id="editNameTag">
+            <div>
+              <label class="field-label" for="editNameTag">Name tag</label>
+              <select id="editNameTag" class="field">
                 <option value="Yes" ${volunteer["Name Tag Given"] === "Yes" ? "selected" : ""}>Yes</option>
                 <option value="No" ${volunteer["Name Tag Given"] === "No" ? "selected" : ""}>No</option>
               </select>
-            </label>
+            </div>
 
-            <label>Meal voucher
-              <select id="editMealVoucher">
+            <div>
+              <label class="field-label" for="editMealVoucher">Meal voucher</label>
+              <select id="editMealVoucher" class="field">
                 <option value="Yes" ${volunteer["Meal Voucher Given"] === "Yes" ? "selected" : ""}>Yes</option>
                 <option value="No" ${volunteer["Meal Voucher Given"] === "No" ? "selected" : ""}>No</option>
               </select>
-            </label>
+            </div>
 
-            <label>T-shirt size<input id="editSize" value="${volunteer["T-Shirt Size"]}" /></label>
+            <div>
+              <label class="field-label" for="editSize">T-shirt size</label>
+              <input id="editSize" class="field" value="${volunteer["T-Shirt Size"]}" />
+            </div>
 
-            <label>T-shirt received
-              <select id="editTshirtReceived">
+            <div>
+              <label class="field-label" for="editTshirtReceived">T-shirt received</label>
+              <select id="editTshirtReceived" class="field">
                 <option value="Yes" ${volunteer["T-Shirt Received"] === "Yes" ? "selected" : ""}>Yes</option>
                 <option value="No" ${volunteer["T-Shirt Received"] === "No" ? "selected" : ""}>No</option>
               </select>
-            </label>
+            </div>
 
-            <label>T-shirt returned
-              <select id="editTshirtReturned">
+            <div>
+              <label class="field-label" for="editTshirtReturned">T-shirt returned</label>
+              <select id="editTshirtReturned" class="field">
                 <option value="Yes" ${volunteer["T-Shirt Returned"] === "Yes" ? "selected" : ""}>Yes</option>
                 <option value="No" ${volunteer["T-Shirt Returned"] === "No" ? "selected" : ""}>No</option>
               </select>
-            </label>
+            </div>
 
-            <label>Access card<input id="editCard" value="${volunteer["Access Card Number"]}" /></label>
-            <label>Locker<input id="editLocker" value="${volunteer["Locker Number"]}" /></label>
+            <div>
+              <label class="field-label" for="editCard">Access card</label>
+              <input id="editCard" class="field" value="${volunteer["Access Card Number"]}" />
+            </div>
 
-            <label>Gift received
-              <select id="editGift">
+            <div>
+              <label class="field-label" for="editLocker">Locker</label>
+              <input id="editLocker" class="field" value="${volunteer["Locker Number"]}" />
+            </div>
+
+            <div>
+              <label class="field-label" for="editGift">Gift received</label>
+              <select id="editGift" class="field">
                 <option value="Yes" ${volunteer["Gift Received"] === "Yes" ? "selected" : ""}>Yes</option>
                 <option value="No" ${volunteer["Gift Received"] === "No" ? "selected" : ""}>No</option>
               </select>
-            </label>
+            </div>
 
-            <label class="sm:col-span-2">Notes
-              <textarea id="editNotes" rows="3">${volunteer.Notes}</textarea>
-            </label>
+            <div class="sm:col-span-2">
+              <label class="field-label" for="editNotes">Notes</label>
+              <textarea id="editNotes" rows="4" class="field">${volunteer.Notes}</textarea>
+            </div>
           </div>
         </div>
 
-        <div class="px-6 py-4 border-t border-slate-200 flex justify-end">
-          <button onclick="saveVolunteerDetails('${volunteer.ID}')" class="px-5 py-2 rounded-xl bg-sky-600 text-white font-semibold">Save changes</button>
+        <div class="px-7 py-5 border-t border-slate-200 flex justify-end">
+          <button onclick="saveVolunteerDetails('${volunteer.ID}')" class="px-7 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold">
+            Save changes
+          </button>
         </div>
       </div>
     </div>
@@ -1141,9 +1386,9 @@ window.addEventListener("DOMContentLoaded", () => {
     console.error(error);
 
     document.getElementById("main").innerHTML = `
-      <div class="bg-white rounded-2xl p-6 border border-rose-200 text-rose-700">
-        <h2 class="font-bold text-lg">The Volunteer Desk could not start.</h2>
-        <p class="mt-2 text-sm">${error.message}</p>
+      <div class="card p-8 border-rose-200 text-rose-700">
+        <h2 class="text-xl font-extrabold">The Volunteer Desk could not start.</h2>
+        <p class="mt-3">${error.message}</p>
       </div>
     `;
   }
