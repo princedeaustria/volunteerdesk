@@ -151,7 +151,7 @@
 <script>
 "use strict";
 
-const STORE_KEY = "scienceCentreVolunteerDesk.v8";
+const STORE_KEY = "scienceCentreVolunteerDesk.v10";
 
 const TSHIRT_INVENTORY = {
   XS: 10,
@@ -170,49 +170,156 @@ const ACCESS_CARDS = Array.from(
 const TOP_LOCKERS = [21, 23, 25, 27, 29, 31, 33, 35, 37, 39];
 const BOTTOM_LOCKERS = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40];
 
-const sampleCSV = [
-  "ID,Name,Assignment,Expected Time In,Actual Time In,Expected Time Out,Actual Time Out,Status,Lanyard Given,Lanyard Returned,Name Tag Given,Meal Voucher Given,Access Card Number,Access Card Returned,Locker Number,Locker Cleared,T-Shirt Size,T-Shirt Received,T-Shirt Returned,Gift Received,Notes",
-  "1,Alex M.,Steven's Lab,8:00,7:55,12:00,—,Checked In,Yes,No,Yes,Yes,AC-001,No,L-01,No,M,Yes,No,No,Arrived early; orientation completed",
-  "2,Jamie C.,CKM,8:00,8:03,12:00,—,Checked In,Yes,No,Yes,Yes,AC-002,No,L-02,No,S,Yes,No,No,Assigned to station lead",
-  "3,Taylor B.,Front of the House,8:00,7:58,12:00,—,Checked In,Yes,No,Yes,Yes,AC-003,No,L-03,No,L,Yes,No,No,Supporting guest welcome and directions",
-  "4,Jordan P.,Registration,7:00,6:55,9:00,9:05,Checked Out,Yes,Yes,Yes,Yes,AC-004,Yes,L-04,Yes,M,Yes,Yes,Yes,Shift completed; handover finished",
-  "5,Casey N.,Event Setup,7:00,—,9:00,—,Absent,No,—,No,No,—,—,—,—,—,XL,No,No,No,Did not attend; coordinator notified",
-  "6,Riley T.,Eatery,8:00,—,12:00,—,Cancelled,No,—,No,No,—,—,—,—,—,S,No,No,No,Cancelled before shift; replacement requested",
-  "7,Morgan L.,Steven's Lab,10:00,—,14:00,—,Scheduled,No,—,No,No,—,—,—,—,—,M,No,No,No,Assist with activity preparation",
-  "8,Avery W.,CKM,10:00,—,14:00,—,Scheduled,No,—,No,No,—,—,—,—,—,L,No,No,No,Report to station lead on arrival",
-  "9,Quinn G.,Front of the House,10:00,—,14:00,—,Scheduled,No,—,No,No,—,—,—,—,—,XS,No,No,No,Support guest arrivals and wayfinding",
-  "10,Cameron D.,Registration,10:00,—,14:00,—,Scheduled,No,—,No,No,—,—,—,—,—,XL,No,No,No,Assist with attendee check-in",
-  "11,Reese M.,Volunteer Support,11:00,—,15:00,—,Scheduled,No,—,No,No,—,—,—,—,—,M,No,No,No,Provide break coverage",
-  "12,Skyler A.,Eatery,11:00,—,15:00,—,Scheduled,No,—,No,No,—,—,—,—,—,S,No,No,No,Assist with serving and restocking",
-  "13,Parker L.,Steven's Lab,12:00,—,16:00,—,Scheduled,No,—,No,No,—,—,—,—,—,L,No,No,No,Afternoon shift; receive handover",
-  "14,Rowan C.,CKM,12:00,—,16:00,—,Scheduled,No,—,No,No,—,—,—,—,—,M,No,No,No,Afternoon station support",
-  "15,Emerson H.,Front of the House,12:00,—,16:00,—,Scheduled,No,—,No,No,—,—,—,—,—,2XL,No,No,No,Support guest departures and directions",
-  "16,Finley Y.,Event Cleanup,14:00,—,18:00,—,Scheduled,No,—,No,No,—,—,—,—,—,L,No,No,No,Assist with packing and cleanup",
-  "17,Dakota K.,Volunteer Support,14:00,—,18:00,—,Scheduled,No,—,No,No,—,—,—,—,—,S,No,No,No,Support closing tasks and equipment returns"
-].join("\n");
+const sampleCSV = `ID,Name,Assignment,Expected Time In,Actual Time In,Expected Time Out,Actual Time Out,Status,Lanyard Given,Lanyard Returned,Name Tag Given,Meal Voucher Given,Access Card Number,Access Card Returned,Locker Number,Locker Cleared,T-Shirt Size,T-Shirt Received,T-Shirt Returned,Gift Received,Notes
+5AD07323-57E8-4C7D-9960-28EA56EF0F8E,Alex M.,The Lab,06/11/2026 08:00,,06/11/2026 12:00,,Scheduled,Yes,No,Yes,Yes,AC-001,No,L-01,No,M,Yes,No,No,Arrived early; orientation completed
+5AD07323-57E8-4C7D-9960-28EA56EF0F8E,Alex M.,Kid's Playground,07/11/2026 08:00,,07/11/2026 12:00,,Scheduled,Yes,No,Yes,Yes,AC-002,No,L-02,No,S,Yes,No,No,Assigned to station lead
+F62AAA01-9572-4A7F-891D-133A1FA653CD,Taylor B.,Front of the House,06/11/2026 08:00,06/11/2026 07:58,06/11/2026 12:00,,Checked In,Yes,No,Yes,Yes,AC-003,No,L-03,No,L,Yes,No,No,Supporting guest welcome and directions
+3F2DFDD7-0454-4E03-B1CD-C5559984B30C,Jordan P.,Registration,06/11/2026 07:00,06/11/2026 06:55,06/11/2026 09:00,06/11/2026 09:05,Checked Out,Yes,Yes,Yes,Yes,AC-004,Yes,L-04,Yes,M,Yes,Yes,Yes,Shift completed; handover finished
+0308AA3A-A4A4-48D8-A1BA-473641776ADB,Casey N.,Event Setup,06/11/2026 07:00,,06/11/2026 09:00,,Absent,No,No,No,No,,No,,No,XL,No,No,No,Did not attend; coordinator notified
+B77710BC-9601-48D9-AA13-A7D2AFEC64EE,Riley T.,Eatery,06/11/2026 08:00,,06/11/2026 12:00,,Cancelled,No,No,No,No,,No,,No,S,No,No,No,Cancelled before shift; replacement requested
+7B296793-40BA-4E82-8212-5E4553DD7614,Morgan L.,The Lab,06/11/2026 10:00,,06/11/2026 14:00,,Scheduled,No,No,No,No,,No,,No,M,No,No,No,Assist with activity preparation
+F25D233F-2D5B-4391-9090-D9A3EC19FAC4,Avery W.,Kid's Playground,06/11/2026 10:00,,06/11/2026 14:00,,Scheduled,No,No,No,No,,No,,No,L,No,No,No,Report to station lead on arrival
+CDED6CB8-EDDD-41A6-825E-564F9FE404AB,Quinn G.,Front of the House,06/11/2026 10:00,,06/11/2026 14:00,,Scheduled,No,No,No,No,,No,,No,XS,No,No,No,Support guest arrivals and wayfinding
+416351B4-DAF0-4C56-89E8-AC491C08742B,Cameron D.,Registration,06/11/2026 10:00,,06/11/2026 14:00,,Scheduled,No,No,No,No,,No,,No,XL,No,No,No,Assist with attendee check-in
+6E188AE5-254A-4406-A0E8-94491CB36B08,Reese M.,Volunteer Support,06/11/2026 11:00,,06/11/2026 15:00,,Scheduled,No,No,No,No,,No,,No,M,No,No,No,Provide break coverage
+B9502D0E-87E6-4E4C-9895-9ADB06DEE669,Skyler A.,Eatery,06/11/2026 11:00,,06/11/2026 15:00,,Scheduled,No,No,No,No,,No,,No,S,No,No,No,Assist with serving and restocking
+14A391E8-1E41-4009-969F-BE4B4CF771EF,Parker L.,The Lab,06/11/2026 12:00,,06/11/2026 16:00,,Scheduled,No,No,No,No,,No,,No,L,No,No,No,Afternoon shift; receive handover
+AD5460F7-39BD-4866-BCD6-85A2FAEDDBCB,Rowan C.,Kid's Playground,06/11/2026 12:00,,06/11/2026 16:00,,Scheduled,No,No,No,No,,No,,No,M,No,No,No,Afternoon station support
+8C29D6E3-39BD-4E99-9782-97E929D1F869,Emerson H.,Front of the House,06/11/2026 12:00,,06/11/2026 16:00,,Scheduled,No,No,No,No,,No,,No,2XL,No,No,No,Support guest departures and directions
+60B548AE-7DF4-4D00-B32A-870B57845785,Finley Y.,Event Cleanup,06/11/2026 14:00,,06/11/2026 18:00,,Scheduled,No,No,No,No,,No,,No,L,No,No,No,Assist with packing and cleanup
+E8ACA344-CC5F-4523-B537-8373BC4D205E,Dakota K.,Volunteer Support,06/11/2026 14:00,,06/11/2026 18:00,,Scheduled,No,No,No,No,,No,,No,S,No,No,No,Support closing tasks and equipment returns`;
 
 let state = null;
 let flow = null;
 let qrScanner = null;
 let qrScannerActive = false;
 
+function parseCSVLine(line) {
+  const values = [];
+  let value = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index++) {
+    const character = line[index];
+
+    if (inQuotes) {
+      if (character === '"') {
+        if (line[index + 1] === '"') {
+          value += '"';
+          index++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        value += character;
+      }
+    } else if (character === '"') {
+      inQuotes = true;
+    } else if (character === ",") {
+      values.push(value);
+      value = "";
+    } else {
+      value += character;
+    }
+  }
+
+  values.push(value);
+  return values.map(value => value.trim());
+}
+
 function parseCSV(text) {
   const rows = text
     .trim()
     .split(/\r?\n/)
-    .map(row => row.split(",").map(value => value.trim()));
+    .map(parseCSVLine);
 
   const headers = rows.shift();
 
-  return rows.map(row => {
-    const record = {};
+  return rows
+    .filter(row => row.some(value => value !== ""))
+    .map(row => {
+      const record = {};
 
-    headers.forEach((header, index) => {
-      record[header] = row[index] || "";
+      headers.forEach((header, index) => {
+        record[header] = row[index] || "";
+      });
+
+      return record;
     });
+}
 
-    return record;
+function nowDateTime() {
+  const now = new Date();
+  const pad = value => String(value).padStart(2, "0");
+
+  return `${pad(now.getMonth() + 1)}/${pad(now.getDate())}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
+function shiftDate(value) {
+  return String(value || "").split(" ")[0] || "—";
+}
+
+function escapeJs(value) {
+  return String(value || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
+function showNameSuggestions(flowType) {
+  const input = document.getElementById("searchName");
+  const box = document.getElementById("nameSuggestions");
+
+  if (!input || !box) return;
+
+  const query = input.value.trim().toLowerCase();
+  const status = flowType === "checkin" ? "Scheduled" : "Checked In";
+  const matches = [];
+  const seen = new Set();
+
+  state.volunteers.forEach(volunteer => {
+    if (volunteer.Status !== status) return;
+    if (seen.has(volunteer.Name)) return;
+
+    if (query && !volunteer.Name.toLowerCase().includes(query)) return;
+
+    seen.add(volunteer.Name);
+    matches.push(volunteer.Name);
   });
+
+  if (!matches.length) {
+    box.innerHTML = `
+      <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        No matching volunteers with ${flowType === "checkin" ? "scheduled" : "checked-in"} shifts.
+      </div>
+    `;
+    return;
+  }
+
+  box.innerHTML = matches
+    .map(
+      name => `
+        <button
+          type="button"
+          onclick="chooseName('${escapeJs(name)}', '${flowType}')"
+          class="w-full text-left rounded-xl border border-slate-200 bg-white px-4 py-3 font-semibold text-slate-800 hover:border-sky-300 hover:bg-sky-50 transition"
+        >
+          ${name}
+        </button>
+      `
+    )
+    .join("");
+}
+
+function chooseName(name, flowType) {
+  const input = document.getElementById("searchName");
+  const box = document.getElementById("nameSuggestions");
+
+  if (input) input.value = name;
+  if (box) box.innerHTML = "";
+
+  if (flowType === "checkin") {
+    locateCheckInVolunteer();
+  } else {
+    locateCheckOutVolunteer();
+  }
 }
 
 function createDefaultState() {
@@ -288,9 +395,10 @@ function setBreadcrumb(steps) {
       if (step === "Check-in") action = "startFlow('checkin')";
       if (step === "Check-out") action = "startFlow('checkout')";
       if (step === "Find Volunteer") action = "goToFlowStep(1)";
-      if (step === "Confirm Shift") action = "goToFlowStep(2)";
-      if (step === "Assets & Notes") action = "goToFlowStep(3)";
-      if (step === "Return Assets") action = "goToFlowStep(2)";
+      if (step === "Select Shift") action = "goToFlowStep(2)";
+      if (step === "Confirm Shift") action = "goToFlowStep(3)";
+      if (step === "Assets & Notes") action = "goToFlowStep(4)";
+      if (step === "Return Assets") action = "goToFlowStep(3)";
 
       return `
         <button
@@ -320,11 +428,11 @@ function goToFlowStep(step) {
   if (!flow) return;
 
   if (flow.type === "checkin") {
-    flow.step = Math.min(step, 3);
+    flow.step = Math.min(step, 4);
   }
 
   if (flow.type === "checkout") {
-    flow.step = Math.min(step, 2);
+    flow.step = Math.min(step, 3);
   }
 
   render();
@@ -342,29 +450,19 @@ function startFlow(type) {
   render();
 }
 
-function findVolunteer(query) {
+function findVolunteerShifts(query) {
   const value = String(query || "").trim().toLowerCase();
 
-  if (!value) return null;
+  if (!value) return [];
 
-  return state.volunteers.find(volunteer => {
-    return (
-      String(volunteer.ID).toLowerCase() === value ||
-      String(volunteer.Name).toLowerCase().includes(value)
-    );
-  });
-}
-
-function volunteerOptions() {
   return state.volunteers
-    .map(
-      volunteer => `
-        <option value="${volunteer.ID}">
-          ${volunteer.Name} — ${volunteer.Assignment}
-        </option>
-      `
-    )
-    .join("");
+    .map((shift, index) => ({ shift, index }))
+    .filter(({ shift }) => {
+      return (
+        String(shift.ID).toLowerCase() === value ||
+        String(shift.Name).toLowerCase().includes(value)
+      );
+    });
 }
 
 function renderHome() {
@@ -413,11 +511,84 @@ function renderHome() {
   `;
 }
 
+function renderShiftSelection(type) {
+  const matches = flow.matches || [];
+  const action = type === "checkin" ? "check in" : "check out";
+
+  setBreadcrumb([
+    "Home",
+    type === "checkin" ? "Check-in" : "Check-out",
+    "Select Shift"
+  ]);
+
+  document.getElementById("main").innerHTML = `
+    <section class="fade-in max-w-4xl mx-auto">
+      <div class="card p-7 sm:p-9">
+        <h2 class="text-2xl font-extrabold text-slate-900">Select a shift</h2>
+
+        <p class="mt-2 text-slate-500">
+          ${matches.length} eligible shift${matches.length === 1 ? "" : "s"} found for <strong>${matches[0].shift.Name}</strong>. Choose the shift to ${action}.
+        </p>
+
+        <div class="mt-7 space-y-4">
+          ${matches
+            .map(
+              ({ shift, index }) => `
+                <button
+                  onclick="selectShift(${index})"
+                  class="w-full text-left rounded-2xl border border-slate-200 bg-slate-50 p-5 hover:border-sky-300 hover:bg-sky-50 transition"
+                >
+                  <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div class="font-bold text-slate-900">
+                        ${shiftDate(shift["Expected Time In"])} — ${shift.Assignment}
+                      </div>
+                      <div class="text-sm text-slate-500">
+                        ${shift["Expected Time In"]}–${shift["Expected Time Out"]} • ${shift.Status}
+                      </div>
+                    </div>
+
+                    <div class="text-sky-700 font-semibold">Select</div>
+                  </div>
+                </button>
+              `
+            )
+            .join("")}
+        </div>
+
+        <div class="mt-9 flex justify-start">
+          <button onclick="goToFlowStep(1)" class="px-6 py-3 rounded-xl border border-slate-300 font-semibold hover:bg-slate-50">
+            Back
+          </button>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function selectShift(index) {
+  if (!flow || !state.volunteers[index]) {
+    showToast("Please select a valid shift.", "error");
+    return;
+  }
+
+  flow.volunteer = state.volunteers[index];
+  flow.shiftIndex = index;
+  flow.step = 3;
+  render();
+}
+
 function renderCheckIn() {
   const steps = [
     "Home",
     "Check-in",
-    flow.step === 1 ? "Find Volunteer" : flow.step === 2 ? "Confirm Shift" : "Assets & Notes"
+    flow.step === 1
+      ? "Find Volunteer"
+      : flow.step === 2
+        ? "Select Shift"
+        : flow.step === 3
+          ? "Confirm Shift"
+          : "Assets & Notes"
   ];
 
   setBreadcrumb(steps);
@@ -429,7 +600,7 @@ function renderCheckIn() {
           <h2 class="text-2xl font-extrabold text-slate-900">Find volunteer</h2>
 
           <p class="mt-2 text-slate-500">
-            Scan the volunteer QR code or enter a volunteer ID or name. A volunteer ID or name is required to continue.
+            Scan the volunteer QR code or type a volunteer name. Only volunteers with scheduled shifts are shown.
           </p>
 
           <div class="mt-8 grid gap-8 lg:grid-cols-2">
@@ -457,20 +628,17 @@ function renderCheckIn() {
             </div>
 
             <div>
-              <div class="field-label">Manual lookup</div>
+              <div class="field-label">Volunteer id/name</div>
 
-              <div class="space-y-5">
-                <div>
-                  <label for="scanId">Volunteer ID</label>
-                  <input id="scanId" class="field mt-2" placeholder="Enter volunteer ID" />
-                </div>
+              <input
+                id="searchName"
+                class="field mt-2"
+                placeholder="Start typing a name"
+                autocomplete="off"
+                oninput="showNameSuggestions('checkin')"
+              />
 
-                <div>
-                  <label for="searchName">Volunteer name</label>
-                  <input id="searchName" list="volunteers" class="field mt-2" placeholder="Start typing a name" />
-                  <datalist id="volunteers">${volunteerOptions()}</datalist>
-                </div>
-              </div>
+              <div id="nameSuggestions" class="mt-3 space-y-2"></div>
             </div>
           </div>
 
@@ -491,32 +659,45 @@ function renderCheckIn() {
   }
 
   if (flow.step === 2) {
+    renderShiftSelection("checkin");
+    return;
+  }
+
+  if (flow.step === 3) {
     const volunteer = flow.volunteer;
 
     document.getElementById("main").innerHTML = `
       <section class="fade-in max-w-3xl mx-auto">
         <div class="card p-7 sm:p-9">
-          <div class="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h2 class="text-2xl font-extrabold text-slate-900">${volunteer.Name}</h2>
-              <p class="mt-1 text-slate-500">Volunteer ID ${volunteer.ID}</p>
-            </div>
+          <h2 class="text-2xl font-extrabold text-slate-900">Confirm check-in</h2>
 
-            <span class="px-4 py-2 rounded-full text-xs font-bold bg-sky-100 text-sky-700">
-              ${volunteer.Status}
-            </span>
-          </div>
+          <div class="mt-6 rounded-2xl bg-slate-50 border border-slate-200 p-6">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <div class="field-label">Volunteer</div>
+                <div class="font-bold">${volunteer.Name}</div>
+              </div>
 
-          <div class="mt-8 grid gap-5 sm:grid-cols-2">
-            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-6">
-              <div class="field-label">Shift assignment</div>
-              <div class="text-lg font-bold text-slate-900">${volunteer.Assignment}</div>
-            </div>
+              <div>
+                <div class="field-label">Assignment</div>
+                <div class="font-bold">${volunteer.Assignment}</div>
+              </div>
 
-            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-6">
-              <div class="field-label">Expected time in / out</div>
-              <div class="text-lg font-bold text-slate-900">
-                ${volunteer["Expected Time In"]} – ${volunteer["Expected Time Out"]}
+              <div>
+                <div class="field-label">Shift date</div>
+                <div class="font-bold">${shiftDate(volunteer["Expected Time In"])}</div>
+              </div>
+
+              <div>
+                <div class="field-label">Expected time</div>
+                <div class="font-bold">
+                  ${volunteer["Expected Time In"]} – ${volunteer["Expected Time Out"]}
+                </div>
+              </div>
+
+              <div>
+                <div class="field-label">Current status</div>
+                <div class="font-bold">${volunteer.Status}</div>
               </div>
             </div>
           </div>
@@ -527,7 +708,7 @@ function renderCheckIn() {
             </button>
 
             <button onclick="confirmCheckIn()" class="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm">
-              Check in volunteer
+              Confirm check-in
             </button>
           </div>
         </div>
@@ -539,119 +720,134 @@ function renderCheckIn() {
 
   const volunteer = flow.volunteer;
 
-  const availableTshirts = Object.keys(state.inventory.tshirts)
-    .filter(size => state.inventory.tshirts[size] > 0)
-    .map(
-      size => `
-        <option value="${size}">
-          ${size} — ${state.inventory.tshirts[size]} available
-        </option>
-      `
-    )
-    .join("");
-
-  const availableCards = state.inventory.accessCards
-    .filter(card => card.status === "Available")
-    .map(card => `<option value="${card.number}">${card.number}</option>`)
-    .join("");
-
   document.getElementById("main").innerHTML = `
     <section class="fade-in max-w-4xl mx-auto">
       <div class="card p-7 sm:p-9">
-        <h2 class="text-2xl font-extrabold text-slate-900">Asset management</h2>
-        <p class="mt-2 text-slate-500">Issue required and optional items to ${volunteer.Name}.</p>
+        <h2 class="text-2xl font-extrabold text-slate-900">Assets &amp; notes</h2>
+
+        <div class="mt-6 rounded-2xl bg-slate-50 border border-slate-200 p-6">
+          <div class="grid gap-4 sm:grid-cols-3">
+            <div>
+              <div class="field-label">Volunteer</div>
+              <div class="font-bold">${volunteer.Name}</div>
+            </div>
+
+            <div>
+              <div class="field-label">Shift</div>
+              <div class="font-bold">${shiftDate(volunteer["Expected Time In"])} • ${volunteer.Assignment}</div>
+            </div>
+
+            <div>
+              <div class="field-label">Actual time in</div>
+              <div class="font-bold">${volunteer["Actual Time In"] || "—"}</div>
+            </div>
+          </div>
+        </div>
 
         <div class="mt-8 space-y-5">
           <div class="asset-option">
-            <input id="lanyard" type="checkbox" />
+            <input id="lanyard" type="checkbox" checked />
             <div>
-              <div class="font-bold text-slate-900">Lanyard</div>
-              <div class="text-sm text-slate-500">Required for all checked-in volunteers.</div>
+              <div class="font-bold text-slate-900">Lanyard issued</div>
+              <div class="text-sm text-slate-500">Required for check-in.</div>
             </div>
           </div>
 
           <div class="asset-option">
-            <input id="nameTag" type="checkbox" />
+            <input id="nameTag" type="checkbox" checked />
             <div>
-              <div class="font-bold text-slate-900">Name tag</div>
-              <div class="text-sm text-slate-500">Required for volunteer identification.</div>
+              <div class="font-bold text-slate-900">Name tag issued</div>
+              <div class="text-sm text-slate-500">Required for check-in.</div>
             </div>
           </div>
 
           <div class="asset-option">
-            <input id="mealVoucher" type="checkbox" />
+            <input id="mealVoucher" type="checkbox" checked />
             <div>
-              <div class="font-bold text-slate-900">Meal voucher</div>
-              <div class="text-sm text-slate-500">Required meal support for the shift.</div>
+              <div class="font-bold text-slate-900">Meal voucher issued</div>
+              <div class="text-sm text-slate-500">Required for check-in.</div>
             </div>
           </div>
 
           <div class="asset-option">
-            <input id="tshirt" type="checkbox" />
+            <input id="tshirt" type="checkbox" checked />
             <div>
-              <div class="font-bold text-slate-900">T-shirt</div>
-              <div class="text-sm text-slate-500">Required; select an available size.</div>
+              <div class="font-bold text-slate-900">T-shirt issued</div>
+              <div class="text-sm text-slate-500">Select the volunteer’s T-shirt size.</div>
             </div>
           </div>
 
           <div>
             <label class="field-label" for="tshirtSize">T-shirt size</label>
             <select id="tshirtSize" class="field">
-              <option value="">Select T-shirt size</option>
-              ${availableTshirts}
+              <option value="">Select a size</option>
+              ${Object.keys(state.inventory.tshirts)
+                .map(
+                  size => `
+                    <option value="${size}">
+                      ${size} — ${state.inventory.tshirts[size]} available
+                    </option>
+                  `
+                )
+                .join("")}
             </select>
           </div>
 
           <div class="asset-option">
             <input id="accessCard" type="checkbox" />
             <div>
-              <div class="font-bold text-slate-900">Access card</div>
-              <div class="text-sm text-slate-500">Optional. Must be returned at check-out.</div>
+              <div class="font-bold text-slate-900">Access card issued</div>
+              <div class="text-sm text-slate-500">Optional. Select an available card.</div>
             </div>
           </div>
 
           <div>
             <label class="field-label" for="accessCardNumber">Access card number</label>
             <select id="accessCardNumber" class="field">
-              <option value="">Select available access card</option>
-              ${availableCards}
+              <option value="">Select a card</option>
+              ${state.inventory.accessCards
+                .filter(card => card.status === "Available")
+                .map(
+                  card => `
+                    <option value="${card.number}">${card.number}</option>
+                  `
+                )
+                .join("")}
             </select>
           </div>
 
           <div class="asset-option">
             <input id="locker" type="checkbox" />
             <div>
-              <div class="font-bold text-slate-900">Locker</div>
-              <div class="text-sm text-slate-500">Optional. Must be released at check-out.</div>
-            </div>
-          </div>
-
-          <div class="grid gap-5 sm:grid-cols-2">
-            <div>
-              <label class="field-label" for="lockerPreference">Locker preference</label>
-              <select id="lockerPreference" class="field" onchange="updateLockerOptions()">
-                <option value="">Select preference</option>
-                <option value="Top">Top locker</option>
-                <option value="Bottom">Bottom locker</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="field-label" for="lockerNumber">Available locker</label>
-              <select id="lockerNumber" class="field">
-                <option value="">Select available locker</option>
-              </select>
+              <div class="font-bold text-slate-900">Locker issued</div>
+              <div class="text-sm text-slate-500">Optional. Select a locker preference and locker.</div>
             </div>
           </div>
 
           <div>
-            <label class="field-label" for="notes">Notes</label>
-            <textarea id="notes" rows="4" class="field" placeholder="Add handover notes or special instructions"></textarea>
+            <label class="field-label" for="lockerPreference">Locker preference</label>
+            <select id="lockerPreference" class="field" onchange="updateLockerOptions()">
+              <option value="">Select a preference</option>
+              <option value="Top">Top locker</option>
+              <option value="Bottom">Bottom locker</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="field-label" for="lockerNumber">Locker number</label>
+            <select id="lockerNumber" class="field">
+              <option value="">Select a locker</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="field-label" for="notes">Check-in notes</label>
+            <textarea id="notes" rows="4" class="field" placeholder="Add arrival or orientation notes">${volunteer.Notes || ""}</textarea>
           </div>
         </div>
 
         <div class="mt-9 flex flex-wrap justify-between gap-3">
-          <button onclick="goToFlowStep(2)" class="px-6 py-3 rounded-xl border border-slate-300 font-semibold hover:bg-slate-50">
+          <button onclick="goToFlowStep(3)" class="px-6 py-3 rounded-xl border border-slate-300 font-semibold hover:bg-slate-50">
             Back
           </button>
 
@@ -666,142 +862,69 @@ function renderCheckIn() {
   updateLockerOptions();
 }
 
-function updateLockerOptions() {
-  const preference = document.getElementById("lockerPreference").value;
-
-  const available = state.inventory.lockers.filter(locker => {
-    return locker.status === "Available" && (!preference || locker.type === preference);
-  });
-
-  document.getElementById("lockerNumber").innerHTML = available
-    .map(
-      locker => `
-        <option value="${locker.number}">
-          ${locker.type} locker ${locker.number}
-        </option>
-      `
-    )
-    .join("");
-}
-
-function startQrScanner(flowType) {
-  const readerElement = document.getElementById("qrReader");
-  const statusElement = document.getElementById("qrStatus");
-
-  if (!readerElement) return;
-
-  if (typeof Html5Qrcode === "undefined") {
-    statusElement.textContent = "QR scanner library is unavailable. Please use manual ID or name search.";
-    showToast("QR scanner library is unavailable.", "error");
-    return;
-  }
-
-  if (qrScannerActive) {
-    showToast("QR scanner is already running.", "info");
-    return;
-  }
-
-  qrScanner = new Html5Qrcode("qrReader");
-
-  qrScanner
-    .start(
-      { facingMode: "environment" },
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 250 }
-      },
-      decodedText => {
-        document.getElementById("scanId").value = decodedText;
-        document.getElementById("searchName").value = "";
-
-        statusElement.textContent = `QR code scanned: ${decodedText}`;
-        showToast("QR code scanned successfully.");
-
-        stopQrScanner();
-
-        if (flowType === "checkin") {
-          locateCheckInVolunteer();
-        } else {
-          locateCheckOutVolunteer();
-        }
-      },
-      () => {
-        // Repeated frame-processing errors are intentionally ignored.
-      }
-    )
-    .then(() => {
-      qrScannerActive = true;
-      statusElement.textContent = "Scanner is active. Point the camera at the volunteer QR code.";
-    })
-    .catch(error => {
-      console.error(error);
-      qrScannerActive = false;
-      statusElement.textContent = "Unable to start the camera. Check camera permissions or use manual lookup.";
-      showToast("Unable to start QR scanner.", "error");
-    });
-}
-
-function stopQrScanner() {
-  if (!qrScanner || !qrScannerActive) return;
-
-  qrScanner
-    .stop()
-    .then(() => {
-      qrScanner.clear();
-    })
-    .catch(error => {
-      console.warn("Unable to stop QR scanner cleanly.", error);
-    })
-    .finally(() => {
-      qrScannerActive = false;
-      qrScanner = null;
-    });
-}
-
 function locateCheckInVolunteer() {
-  const id = document.getElementById("scanId").value.trim();
   const name = document.getElementById("searchName").value.trim();
+  const box = document.getElementById("nameSuggestions");
 
-  if (!id && !name) {
-    showToast("Enter a volunteer ID or name before continuing.", "error");
+  if (!name) {
+    if (box) {
+      box.innerHTML = `
+        <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Enter a volunteer name to continue.
+        </div>
+      `;
+    }
+
+    showToast("Enter a volunteer name before continuing.", "error");
     return;
   }
 
-  const volunteer = id ? findVolunteer(id) : findVolunteer(name);
+  const matches = findVolunteerShifts(name).filter(
+    ({ shift }) => shift.Status === "Scheduled"
+  );
 
-  if (!volunteer) {
-    showToast("Volunteer not found. Check the ID or name.", "error");
-    return;
-  }
+  if (!matches.length) {
+    if (box) {
+      box.innerHTML = `
+        <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          No matching volunteers with scheduled shifts.
+        </div>
+      `;
+    }
 
-  if (volunteer.Status === "Checked In") {
-    showToast(`${volunteer.Name} is already checked in.`, "error");
+    showToast("No matching volunteers with scheduled shifts.", "error");
     return;
   }
 
   stopQrScanner();
 
-  flow.volunteer = volunteer;
+  flow.matches = matches;
+
+  if (matches.length === 1) {
+    selectShift(matches[0].index);
+    return;
+  }
+
   flow.step = 2;
   render();
 }
 
 function confirmCheckIn() {
   if (!flow.volunteer) {
-    showToast("No volunteer selected. Return to Find Volunteer.", "error");
+    showToast("No shift selected. Return to Find Volunteer.", "error");
     goHome();
     return;
   }
 
-  flow.volunteer["Actual Time In"] = nowTime();
+  flow.volunteer["Actual Time In"] = nowDateTime();
   flow.volunteer.Status = "Checked In";
-  flow.step = 3;
+  flow.step = 4;
   render();
 }
 
 function completeCheckIn() {
   if (!flow.volunteer) {
-    showToast("No volunteer selected for check-in.", "error");
+    showToast("No shift selected for check-in.", "error");
     goHome();
     return;
   }
@@ -871,15 +994,110 @@ function completeCheckIn() {
   volunteer.Notes = notes || volunteer.Notes;
 
   saveState();
-  showToast(`${volunteer.Name} checked in successfully.`);
+  showToast(`${volunteer.Name} checked in for ${volunteer.Assignment}.`);
   goHome();
+}
+
+function updateLockerOptions() {
+  const preference = document.getElementById("lockerPreference").value;
+
+  const available = state.inventory.lockers.filter(locker => {
+    return locker.status === "Available" && (!preference || locker.type === preference);
+  });
+
+  document.getElementById("lockerNumber").innerHTML = available
+    .map(
+      locker => `
+        <option value="${locker.number}">
+          ${locker.type} locker ${locker.number}
+        </option>
+      `
+    )
+    .join("");
+}
+
+function startQrScanner(flowType) {
+  const readerElement = document.getElementById("qrReader");
+  const statusElement = document.getElementById("qrStatus");
+
+  if (!readerElement) return;
+
+  if (typeof Html5Qrcode === "undefined") {
+    statusElement.textContent = "QR scanner library is unavailable. Please use manual ID or name search.";
+    showToast("QR scanner library is unavailable.", "error");
+    return;
+  }
+
+  if (qrScannerActive) {
+    showToast("QR scanner is already running.", "info");
+    return;
+  }
+
+  qrScanner = new Html5Qrcode("qrReader");
+
+  qrScanner
+    .start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 }
+      },
+      decodedText => {
+        const searchName = document.getElementById("searchName");
+
+        if (searchName) {
+          searchName.value = decodedText;
+        }
+
+        statusElement.textContent = `QR code scanned: ${decodedText}`;
+        showToast("QR code scanned successfully.");
+
+        stopQrScanner();
+
+        if (flowType === "checkin") {
+          locateCheckInVolunteer();
+        } else {
+          locateCheckOutVolunteer();
+        }
+      },
+      () => {
+        // Repeated frame-processing errors are intentionally ignored.
+      }
+    )
+    .then(() => {
+      qrScannerActive = true;
+      statusElement.textContent = "Scanner is active. Point the camera at the volunteer QR code.";
+    })
+    .catch(error => {
+      console.error(error);
+      qrScannerActive = false;
+      statusElement.textContent = "Unable to start the camera. Check camera permissions or use manual lookup.";
+      showToast("Unable to start QR scanner.", "error");
+    });
+}
+
+function stopQrScanner() {
+  if (!qrScanner || !qrScannerActive) return;
+
+  qrScanner
+    .stop()
+    .then(() => {
+      qrScanner.clear();
+    })
+    .catch(error => {
+      console.warn("Unable to stop QR scanner cleanly.", error);
+    })
+    .finally(() => {
+      qrScannerActive = false;
+      qrScanner = null;
+    });
 }
 
 function renderCheckOut() {
   setBreadcrumb([
     "Home",
     "Check-out",
-    flow.step === 1 ? "Find Volunteer" : "Return Assets"
+    flow.step === 1 ? "Find Volunteer" : flow.step === 2 ? "Select Shift" : "Return Assets"
   ]);
 
   if (flow.step === 1) {
@@ -889,7 +1107,7 @@ function renderCheckOut() {
           <h2 class="text-2xl font-extrabold text-slate-900">Find volunteer for check-out</h2>
 
           <p class="mt-2 text-slate-500">
-            Scan the volunteer QR code or enter a volunteer ID or name. A volunteer ID or name is required to continue.
+            Scan the volunteer QR code or type a volunteer name. Only volunteers with checked-in shifts are shown.
           </p>
 
           <div class="mt-8 grid gap-8 lg:grid-cols-2">
@@ -917,20 +1135,17 @@ function renderCheckOut() {
             </div>
 
             <div>
-              <div class="field-label">Manual lookup</div>
+              <div class="field-label">Volunteer id/name</div>
 
-              <div class="space-y-5">
-                <div>
-                  <label for="scanId">Volunteer ID</label>
-                  <input id="scanId" class="field mt-2" placeholder="Enter volunteer ID" />
-                </div>
+              <input
+                id="searchName"
+                class="field mt-2"
+                placeholder="Start typing a name"
+                autocomplete="off"
+                oninput="showNameSuggestions('checkout')"
+              />
 
-                <div>
-                  <label for="searchName">Volunteer name</label>
-                  <input id="searchName" list="volunteers" class="field mt-2" placeholder="Start typing a name" />
-                  <datalist id="volunteers">${volunteerOptions()}</datalist>
-                </div>
-              </div>
+              <div id="nameSuggestions" class="mt-3 space-y-2"></div>
             </div>
           </div>
 
@@ -947,6 +1162,11 @@ function renderCheckOut() {
       </section>
     `;
 
+    return;
+  }
+
+  if (flow.step === 2) {
+    renderShiftSelection("checkout");
     return;
   }
 
@@ -994,13 +1214,18 @@ function renderCheckOut() {
   document.getElementById("main").innerHTML = `
     <section class="fade-in max-w-4xl mx-auto">
       <div class="card p-7 sm:p-9">
-        <h2 class="text-2xl font-extrabold text-slate-900">Return assets & complete shift</h2>
+        <h2 class="text-2xl font-extrabold text-slate-900">Return assets &amp; complete shift</h2>
 
         <div class="mt-6 rounded-2xl bg-slate-50 border border-slate-200 p-6">
           <div class="grid gap-4 sm:grid-cols-3">
             <div>
-              <div class="field-label">Assignment</div>
-              <div class="font-bold">${volunteer.Assignment}</div>
+              <div class="field-label">Volunteer</div>
+              <div class="font-bold">${volunteer.Name}</div>
+            </div>
+
+            <div>
+              <div class="field-label">Shift</div>
+              <div class="font-bold">${shiftDate(volunteer["Expected Time In"])} • ${volunteer.Assignment}</div>
             </div>
 
             <div>
@@ -1065,39 +1290,55 @@ function renderCheckOut() {
 }
 
 function locateCheckOutVolunteer() {
-  const id = document.getElementById("scanId").value.trim();
   const name = document.getElementById("searchName").value.trim();
+  const box = document.getElementById("nameSuggestions");
 
-  if (!id && !name) {
-    showToast("Enter a volunteer ID or name before continuing.", "error");
+  if (!name) {
+    if (box) {
+      box.innerHTML = `
+        <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Enter a volunteer name to continue.
+        </div>
+      `;
+    }
+
+    showToast("Enter a volunteer name before continuing.", "error");
     return;
   }
 
-  const volunteer = id ? findVolunteer(id) : findVolunteer(name);
+  const matches = findVolunteerShifts(name).filter(
+    ({ shift }) => shift.Status === "Checked In"
+  );
 
-  if (!volunteer) {
-    showToast("Volunteer not found. Check the ID or name.", "error");
-    return;
-  }
+  if (!matches.length) {
+    if (box) {
+      box.innerHTML = `
+        <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          No matching volunteers with checked-in shifts.
+        </div>
+      `;
+    }
 
-  if (volunteer.Status !== "Checked In") {
-    showToast(
-      `${volunteer.Name} cannot be checked out because they are not checked in.`,
-      "error"
-    );
+    showToast("No matching volunteers with checked-in shifts.", "error");
     return;
   }
 
   stopQrScanner();
 
-  flow.volunteer = volunteer;
+  flow.matches = matches;
+
+  if (matches.length === 1) {
+    selectShift(matches[0].index);
+    return;
+  }
+
   flow.step = 2;
   render();
 }
 
 function completeCheckOut() {
   if (!flow.volunteer) {
-    showToast("No volunteer selected for check-out.", "error");
+    showToast("No shift selected for check-out.", "error");
     goHome();
     return;
   }
@@ -1148,7 +1389,9 @@ function completeCheckOut() {
     volunteer["T-Shirt Returned"] = "Yes";
     volunteer["T-Shirt Received"] = "No";
 
-    state.inventory.tshirts[volunteer["T-Shirt Size"]]++;
+    if (state.inventory.tshirts[volunteer["T-Shirt Size"]] !== undefined) {
+      state.inventory.tshirts[volunteer["T-Shirt Size"]]++;
+    }
   }
 
   if (cardReturn) {
@@ -1180,12 +1423,12 @@ function completeCheckOut() {
   }
 
   volunteer["Gift Received"] = gift ? "Yes" : "No";
-  volunteer["Actual Time Out"] = nowTime();
+  volunteer["Actual Time Out"] = nowDateTime();
   volunteer.Status = "Checked Out";
   volunteer.Notes = notes;
 
   saveState();
-  showToast(`${volunteer.Name} checked out successfully.`);
+  showToast(`${volunteer.Name} checked out from ${volunteer.Assignment}.`);
   goHome();
 }
 
@@ -1194,6 +1437,10 @@ function renderDashboard() {
 
   const volunteers = state.volunteers;
   const inventory = state.inventory;
+
+  const uniqueVolunteers = new Set(
+    volunteers.map(volunteer => String(volunteer.ID))
+  ).size;
 
   const checkedIn = volunteers.filter(
     volunteer => volunteer.Status === "Checked In"
@@ -1242,8 +1489,8 @@ function renderDashboard() {
   document.getElementById("main").innerHTML = `
     <section class="fade-in">
       <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        ${summaryCard("Total volunteers", volunteers.length, "text-sky-600")}
-        ${summaryCard("Checked-in volunteers", checkedIn, "text-emerald-600")}
+        ${summaryCard("Total volunteers", uniqueVolunteers, "text-sky-600")}
+        ${summaryCard("Checked-in shifts", checkedIn, "text-emerald-600")}
         ${summaryCard("Scheduled shifts", scheduled, "text-indigo-600")}
         ${summaryCard("Completed shifts", completed, "text-slate-700")}
       </div>
@@ -1372,6 +1619,7 @@ function renderDashboard() {
             <thead>
               <tr>
                 <th onclick="sortByName()" class="cursor-pointer">Name</th>
+                <th>Date</th>
                 <th>Assignment</th>
                 <th>Scheduled hours</th>
                 <th>Attendance</th>
@@ -1430,6 +1678,7 @@ function filterDashboard() {
           volunteer => `
             <tr>
               <td class="font-bold text-slate-900">${volunteer.Name}</td>
+              <td>${shiftDate(volunteer["Expected Time In"])}</td>
               <td>${volunteer.Assignment}</td>
 
               <td>
@@ -1457,7 +1706,7 @@ function filterDashboard() {
               </td>
 
               <td class="text-right">
-                <button onclick="openVolunteerDetails('${volunteer.ID}')" class="text-sky-700 font-semibold hover:underline">
+                <button onclick="openVolunteerDetails(${state.volunteers.indexOf(volunteer)})" class="text-sky-700 font-semibold hover:underline">
                   Details
                 </button>
               </td>
@@ -1467,7 +1716,7 @@ function filterDashboard() {
         .join("")
     : `
       <tr>
-        <td colspan="7" class="text-center text-slate-500 py-10">
+        <td colspan="8" class="text-center text-slate-500 py-10">
           No volunteers match the current filters.
         </td>
       </tr>
@@ -1489,8 +1738,8 @@ function sortByName() {
   filterDashboard();
 }
 
-function openVolunteerDetails(id) {
-  const volunteer = state.volunteers.find(item => item.ID === id);
+function openVolunteerDetails(index) {
+  const volunteer = state.volunteers[index];
   const modalRoot = document.getElementById("modalRoot");
 
   modalRoot.innerHTML = `
@@ -1586,7 +1835,7 @@ function openVolunteerDetails(id) {
         </div>
 
         <div class="px-7 py-5 border-t border-slate-200 flex justify-end">
-          <button onclick="saveVolunteerDetails('${volunteer.ID}')" class="px-7 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold">
+          <button onclick="saveVolunteerDetails(${index})" class="px-7 py-3 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold">
             Save changes
           </button>
         </div>
@@ -1603,8 +1852,8 @@ function closeModal() {
   modalRoot.innerHTML = "";
 }
 
-function saveVolunteerDetails(id) {
-  const volunteer = state.volunteers.find(item => item.ID === id);
+function saveVolunteerDetails(index) {
+  const volunteer = state.volunteers[index];
 
   volunteer.Name = document.getElementById("editName").value;
   volunteer.Assignment = document.getElementById("editAssignment").value;
