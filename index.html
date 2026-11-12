@@ -758,7 +758,7 @@ function renderCheckIn() {
 
         <div class="mt-8 space-y-5">
           <div class="asset-option">
-            <input id="lanyard" type="checkbox" checked />
+            <input id="lanyard" type="checkbox" />
             <div>
               <div class="font-bold text-slate-900">Lanyard issued</div>
               <div class="text-sm text-slate-500">Required for check-in.</div>
@@ -766,7 +766,7 @@ function renderCheckIn() {
           </div>
 
           <div class="asset-option">
-            <input id="nameTag" type="checkbox" checked />
+            <input id="nameTag" type="checkbox" />
             <div>
               <div class="font-bold text-slate-900">Name tag issued</div>
               <div class="text-sm text-slate-500">Required for check-in.</div>
@@ -774,7 +774,7 @@ function renderCheckIn() {
           </div>
 
           <div class="asset-option">
-            <input id="mealVoucher" type="checkbox" checked />
+            <input id="mealVoucher" type="checkbox" />
             <div>
               <div class="font-bold text-slate-900">Meal voucher issued</div>
               <div class="text-sm text-slate-500">Required for check-in.</div>
@@ -782,7 +782,7 @@ function renderCheckIn() {
           </div>
 
           <div class="asset-option">
-            <input id="tshirt" type="checkbox" checked />
+            <input id="tshirt" type="checkbox" />
             <div>
               <div class="font-bold text-slate-900">T-shirt issued</div>
               <div class="text-sm text-slate-500">Select the volunteer’s T-shirt size.</div>
@@ -839,7 +839,6 @@ function renderCheckIn() {
           <div>
             <label class="field-label" for="lockerPreference">Locker preference</label>
             <select id="lockerPreference" class="field" onchange="updateLockerOptions()">
-              <option value="">Select a preference</option>
               <option value="Top">Top locker</option>
               <option value="Bottom">Bottom locker</option>
             </select>
